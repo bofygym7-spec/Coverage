@@ -20,6 +20,9 @@
        "Geeza Pro","Segoe UI",Tahoma,sans-serif;
   --latin:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
   --panel-hidden:100%;
+  --r:10px;          /* one corner radius everywhere */
+  --hair:1px solid var(--rule);
+  --shadow:0 1px 2px rgba(16,24,32,.04), 0 8px 24px rgba(16,24,32,.06);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
@@ -47,23 +50,31 @@ a{color:var(--accent)}
 .stat.warn b{color:#ffc96b}
 .status .spacer{flex:1;border:0}
 .viewtabs{display:flex;align-items:stretch}
-.viewtabs button{padding:0 17px;color:#b6c0cb;font-size:12.5px;border-inline-start:1px solid #2c3540}
-.viewtabs button[aria-selected=true]{background:var(--accent);color:#fff;font-weight:600}
+.viewtabs button{padding:0 15px;color:#aab4c0;font-size:12.5px;border-radius:7px;
+  transition:background .15s,color .15s}
+.viewtabs button:hover{background:rgba(255,255,255,.06);color:#fff}
+.viewtabs button[aria-selected=true]{background:rgba(255,255,255,.12);color:#fff;font-weight:600}
 
 /* ---- toolbar --------------------------------------------------------- */
-.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;
-  padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--rule)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:11px 16px;background:var(--surface);border-bottom:var(--hair)}
 .toolbar label{font-size:11px;color:var(--muted);margin-inline-end:-4px}
 input[type=search],select{
-  border:1px solid var(--rule);background:var(--surface);border-radius:2px;
-  padding:5px 7px;font:inherit;font-size:12px;color:var(--ink);min-height:28px}
+  border:var(--hair);background:var(--surface);border-radius:8px;
+  padding:7px 10px;font:inherit;font-size:12.5px;color:var(--ink);min-height:34px;
+  transition:border-color .15s,box-shadow .15s}
+input[type=search]:hover,select:hover{border-color:#c4ccd6}
+input[type=search]:focus,select:focus{border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(43,90,143,.12);outline:none}
 input[type=search]{min-width:210px}
 input:focus-visible,select:focus-visible,button:focus-visible,
 [tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.winsel{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
-.winsel button{padding:5px 11px;font-size:12px;color:var(--ink-2);border-inline-end:1px solid var(--rule)}
-.winsel button:last-child{border-inline-end:0}
-.winsel button[aria-pressed=true]{background:var(--accent);color:#fff;font-weight:600}
+.winsel{display:flex;gap:2px;background:var(--surface-2);border-radius:9px;padding:2px}
+.winsel button{padding:6px 12px;font-size:12.5px;color:var(--ink-2);border-radius:7px;
+  transition:background .15s,color .15s}
+.winsel button:hover{color:var(--ink)}
+.winsel button[aria-pressed=true]{background:var(--surface);color:var(--ink);
+  font-weight:600;box-shadow:0 1px 2px rgba(16,24,32,.10)}
 .pill{margin-inline-start:auto;font-size:11.5px;color:var(--muted)}
 .linkbtn{color:var(--accent);font-size:12px;text-decoration:underline}
 
@@ -71,10 +82,11 @@ input:focus-visible,select:focus-visible,button:focus-visible,
 .tablewrap{overflow:auto;height:calc(100vh - 108px);background:var(--surface)}
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
 thead th{
-  position:sticky;top:0;z-index:3;background:var(--surface-2);
-  border-bottom:1px solid var(--rule);border-inline-end:1px solid var(--rule-2);
-  padding:6px 8px;text-align:end;font-weight:600;font-size:11px;color:var(--ink-2);
-  white-space:nowrap;cursor:pointer;vertical-align:bottom}
+  position:sticky;top:0;z-index:3;background:var(--surface);
+  border-bottom:var(--hair);
+  padding:9px 10px;text-align:end;font-weight:600;font-size:11px;color:var(--muted);
+  letter-spacing:.02em;white-space:nowrap;cursor:pointer;vertical-align:bottom}
+thead th:hover{color:var(--ink)}
 thead th.l{text-align:start}
 thead th .sub{display:block;font-weight:400;color:var(--muted);font-size:10px}
 thead th[aria-sort]:after{content:"";margin-inline-start:4px;opacity:.75}
@@ -184,6 +196,72 @@ ul.srcs .dom{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
   dl.kv{grid-template-columns:1fr}
   .status .brand{width:100%;border-inline-end:0}
 }
+/* ---- mobile cards ---------------------------------------------------
+   Below 860px the table is replaced entirely. This is the fix for the
+   country column painting blank on iOS: with no horizontal scroll there is
+   no sticky cell to detach. */
+.cards{display:none}
+@media(max-width:860px){
+  .tablewrap table{display:none}
+  .tablewrap{height:auto;overflow:visible;background:transparent;
+    padding:10px 10px 40px}
+  .cards{display:flex;flex-direction:column;gap:8px}
+  .card{background:var(--surface);border:var(--hair);border-radius:var(--r);
+    padding:12px 13px;cursor:pointer;transition:border-color .15s,transform .06s}
+  .card:active{transform:scale(.995)}
+  .card .top{display:flex;align-items:baseline;gap:8px}
+  .card .rank{font-size:11px;color:var(--muted);min-width:26px;font-variant-numeric:tabular-nums}
+  .card .nm{font-size:15px;font-weight:600;color:var(--ink);flex:1;line-height:1.3}
+  .card .big{font-size:21px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .card .big small{font-size:11px;font-weight:400;color:var(--muted);
+    margin-inline-start:5px;letter-spacing:0}
+  .card .meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+  .card .chip{font-size:11px;padding:3px 8px;border-radius:99px;
+    background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+  .card .chip b{font-weight:650;color:var(--ink)}
+  .card .chip.fat{background:#fdeceb;color:#8d2c25}
+  .card .chip.t-esc,.card .chip.t-up{background:#fdeceb;color:#8d2c25}
+  .card .chip.t-down{background:#eaf5ee;color:#22603a}
+  .card .chip.scope{background:#eef2f7;color:#4b5b6b;font-style:italic}
+  .toolbar{padding:9px 10px;gap:7px}
+  .toolbar label{display:none}
+  input[type=search]{min-width:0;flex:1 1 100%}
+  .pill{margin:0;width:100%;text-align:start}
+  .panel{width:100vw;max-width:100vw}
+  .status{flex-wrap:wrap}
+  .status .stat{flex:1 1 auto;min-width:33%}
+}
+/* ---- dropdowns ---- */
+select.enhanced{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.sel{position:relative;display:inline-block}
+.sel-btn{display:flex;align-items:center;gap:7px;min-height:34px;
+  padding:7px 10px;border:var(--hair);border-radius:8px;background:var(--surface);
+  font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer;
+  transition:border-color .15s,box-shadow .15s;white-space:nowrap}
+.sel-btn:hover{border-color:#c4ccd6}
+.sel[data-open=true] .sel-btn{border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(43,90,143,.12)}
+.sel-btn .cv{flex:1;text-align:start;overflow:hidden;text-overflow:ellipsis}
+.sel-btn .cx{width:8px;height:8px;flex:none;opacity:.45;
+  border-inline-end:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
+  transform:rotate(45deg) translate(-2px,-2px);transition:transform .18s}
+.sel[data-open=true] .sel-btn .cx{transform:rotate(-135deg) translate(-3px,-3px)}
+.sel-menu{position:absolute;top:calc(100% + 5px);inset-inline-start:0;z-index:60;
+  min-width:100%;max-height:290px;overflow:auto;padding:5px;
+  background:var(--surface);border:var(--hair);border-radius:var(--r);
+  box-shadow:var(--shadow);display:none}
+.sel[data-open=true] .sel-menu{display:block}
+.sel-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;
+  font-size:12.5px;color:var(--ink);cursor:pointer;white-space:nowrap}
+.sel-opt:hover,.sel-opt.active{background:var(--surface-2)}
+.sel-opt[aria-selected=true]{font-weight:600}
+.sel-opt .tick{width:14px;flex:none;opacity:0;color:var(--accent);font-weight:700}
+.sel-opt[aria-selected=true] .tick{opacity:1}
+@media(max-width:860px){
+  .sel{flex:1 1 auto;min-width:0}
+  .sel-btn{width:100%}
+  .sel-menu{max-height:60vh}
+}
 html[dir=rtl]{--panel-hidden:-100%}
 html[dir=rtl] body{font-family:var(--ar);font-size:14.5px;line-height:1.7}
 html[dir=rtl] .status .brand{font-size:15.5px}
@@ -232,7 +310,12 @@ td.country,thead th.country{inset-inline-start:40px}
       <option value="DETERIORATING" data-i18n="tr_det"></option><option value="STABLE" data-i18n="tr_sta"></option>
       <option value="IMPROVING" data-i18n="tr_imp"></option><option value="INSUFFICIENT HISTORY" data-i18n="tr_nc"></option>
     </select>
-    <label for="f-status" data-i18n="danger"></label><select id="f-status"><option value="">All</option></select>
+    <label for="f-scope" data-i18n="scope"></label>
+      <select id="f-scope">
+        <option value="COUNTRY" selected data-i18n="scopeCountries"></option>
+        <option value="" data-i18n="scopeAll"></option>
+      </select>
+      <label for="f-status" data-i18n="danger"></label><select id="f-status"><option value="">All</option></select>
     <div class="winsel" role="group" aria-label="Counting window">
       <button data-win="d7" data-i18n="w7"></button>
       <button data-win="d30" aria-pressed="true" data-i18n="w30"></button>
@@ -241,7 +324,7 @@ td.country,thead th.country{inset-inline-start:40px}
     </div>
     <span class="pill" id="rowcount"></span>
   </div>
-  <div class="tablewrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  <div class="tablewrap"><div class="cards" id="cards"></div><table id="tbl"><thead></thead><tbody></tbody></table></div>
 </section>
 
 <!-- ============ COUNTRY VIEW ============ -->
@@ -294,6 +377,12 @@ td.country,thead th.country{inset-inline-start:40px}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+  // Second source, used only if the first did not define L.
+  if (typeof L === "undefined") {
+    document.write('<scr'+'ipt src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"><\/scr'+'ipt>');
+  }
+</script>
+<script>
 const INLINE_DATA = /*__DATA__*/ null;
 
 /* Reference cities for proximity analysis. Coordinates are used only to measure
@@ -330,6 +419,9 @@ const DICT={
   trend:"الاتجاه", danger:"الخطر", all:"الكل", window:"النافذة",
   w7:"7 أيام", w30:"30 يومًا", w90:"90 يومًا", wall:"كامل المخزون",
   c7:"7 أيام", c30:"30 يومًا", c90:"90 يومًا",
+  mapOffline:"تعذّر تحميل مكتبة الخرائط. تحقّق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. باقي اللوحة يعمل دون الخريطة.",
+  scope:"النطاق", scopeCountries:"الدول فقط", scopeAll:"كل المُدخلات",
+  scope_WATERS:"مياه/بحار", scope_REGION:"إقليم", scope_UNRESOLVED:"موقع غير محدد",
   storedFrom:"المخزّن من", gapHint:"المخزون يبدأ بعد بداية تغطية GDELT. الفترة الأسبق لم تُستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغّل التحديث مع خيار الاستيراد الكامل (backfill).",
   lw7:"آخر 7 أيام", lw30:"آخر 30 يومًا", lw90:"آخر 90 يومًا", lwall:"كامل السجل المخزّن",
   country:"الدولة", dangerStatus:"حالة الخطر", prev30:"الـ30 السابقة",
@@ -398,6 +490,9 @@ const DICT={
   trend:"Trend", danger:"Danger", all:"All", window:"Window",
   w7:"7 days", w30:"30 days", w90:"90 days", wall:"Full store",
   c7:"7d", c30:"30d", c90:"90d",
+  mapOffline:"The map library could not load. Check the network connection and reload. The rest of the dashboard works without it.",
+  scope:"Scope", scopeCountries:"Countries only", scopeAll:"All entries",
+  scope_WATERS:"waters", scope_REGION:"region", scope_UNRESOLVED:"unresolved",
   storedFrom:"Stored from", gapHint:"The store begins after GDELT's coverage start. The earlier period has not been ingested; that is not the same as zero events. Run the workflow with backfill enabled.",
   lw7:"last 7 days", lw30:"last 30 days", lw90:"last 90 days", lwall:"full stored history",
   country:"Country", dangerStatus:"Danger status", prev30:"Prev 30d",
@@ -574,7 +669,9 @@ function applyStatic(){
 }
 function setLang(l){
   LANG=l; try{localStorage.setItem("gsd_lang",l)}catch(e){}
-  applyStatic(); renderStatus(); renderTable();
+  applyStatic();
+  if(typeof enhanceSelects==="function") enhanceSelects();
+  renderStatus(); renderTable();
   if(VIEW==="country") renderCountry();
   if(VIEW==="map") renderMap();
 }
@@ -621,7 +718,7 @@ function renderStatus(){
   const gap = m.store_earliest_event && m.store_earliest_event > m.coverage_start;
   $("#status").innerHTML=`
     <div class="brand">${T("brand")} <span>GDELT Cloud</span></div>
-    <div class="stat"><i>${T("lastRefresh")}</i><b>${esc((m.last_refresh||"").replace("T"," ").replace("+00:00"," UTC"))}</b></div>
+    <div class="stat"><i>${T("lastRefresh")}</i><b>${esc(localStamp(m.last_refresh))}</b></div>
     <div class="stat ${stale?"warn":""}"><i>${T("latestEventDate")}</i><b>${esc(m.latest_event_date||T("none"))}</b></div>
     <div class="stat"><i>${T("coverageStart")}</i><b>${esc(m.coverage_start)}</b></div>
     <div class="stat ${gap?"warn":""}" title="${esc(gap?T("gapHint"):"")}"><i>${T("storedFrom")}</i><b>${esc(m.store_earliest_event||"–")}${gap?" ⚠":""}</b></div>
@@ -661,6 +758,37 @@ const HEAD=()=>[
   {k:"d90_incidents",t:T("c90")},
   {k:"d30_fatalities",t:T("fat30")},{k:"d90_fatalities",t:T("fat90")}
 ];
+function renderCards(rows){
+  const box=$("#cards"); if(!box) return;
+  if(!rows.length){ box.innerHTML=`<div class="empty">${T("noCountries")}</div>`; return; }
+  box.innerHTML = rows.map((r,ix)=>{
+    // Only categories with a non-zero count are shown. A phone card listing
+    // eleven zeroes tells the reader nothing.
+    const cats=COLS.filter(c=>D.categories[c] && r.categories[c]>0)
+      .sort((a,b)=>r.categories[b]-r.categories[a]).slice(0,4)
+      .map(c=>`<span class="chip"><b>${r.categories[c]}</b> ${esc(SHORT[LANG][c])}</span>`).join("");
+    const fat=r.d30_fatalities>0
+      ? `<span class="chip fat"><b>${r.d30_fatalities}</b> ${T("killed")}</span>` : "";
+    const tr=r.trend.label===NOCOV ? ""
+      : `<span class="chip ${trCls(r.trend.label)}">${esc(TREND(r.trend.label))}</span>`;
+    const scope=r.geo_scope&&r.geo_scope!=="COUNTRY"
+      ? `<span class="chip scope">${esc(T("scope_"+r.geo_scope))}</span>` : "";
+    return `<div class="card" data-country="${esc(r.country)}" tabindex="0">
+      <div class="top">
+        <span class="rank">${ix+1}</span>
+        <span class="nm">${esc(CTRY(r.country))}</span>
+        <span class="big">${r.d30_incidents}<small>${esc(T("incidentsWord2"))}</small></span>
+      </div>
+      <div class="meta">${scope}${tr}${fat}${cats}</div>
+    </div>`;
+  }).join("");
+  $$("#cards .card").forEach(el=>{
+    const go=()=>{CUR_COUNTRY=el.dataset.country;show("country");};
+    el.onclick=go;
+    el.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();go();} };
+  });
+}
+
 function renderTable(){
   const q=$("#q").value.trim(), reg=$("#f-region").value, cat=$("#f-cat").value,
         tr=$("#f-trend").value, st=$("#f-status").value;
@@ -669,6 +797,8 @@ function renderTable(){
   if(tr) rows=rows.filter(r=>r.trend.label===tr);
   if(st) rows=rows.filter(r=>r.danger_status===st);
   if(cat) rows=rows.filter(r=>select({country:r.country,category:cat}).length>0);
+  const scope=$("#f-scope") ? $("#f-scope").value : "COUNTRY";
+  if(scope) rows=rows.filter(r=>(r.geo_scope||"COUNTRY")===scope);
   if(q) rows=rows.filter(r=>(r.country+" "+CTRY(r.country)).toLowerCase().includes(q.toLowerCase())
                           || select({country:r.country,text:q}).length>0);
 
@@ -713,10 +843,101 @@ function renderTable(){
   }).join("") : `<tr><td colspan="25" class="empty">${T("noCountries")}</td></tr>`;
 
   $("#rowcount").textContent=`${rows.length} ${T("countriesWord")} \u00b7 ${D.meta.total_incidents} ${T("incidentsWord")}`;
+  renderCards(rows);
   wire();
 }
 const trCls=l=>l==="SIGNIFICANT ESCALATION"?"t-esc":l==="DETERIORATING"?"t-up":l==="IMPROVING"?"t-down":"t-flat";
 const NOCOV="INSUFFICIENT HISTORY";
+/* Rebuildable: fillSelect() replaces <option>s and setLang() retranslates them,
+   so this reads the native element every time rather than caching. */
+function enhanceSelects(){
+  $$("select").forEach(nat=>{
+    let box = nat._sel;
+    if(!box){
+      nat.classList.add("enhanced");
+      box=document.createElement("div");
+      box.className="sel";
+      box.innerHTML=`<button type="button" class="sel-btn" aria-haspopup="listbox"
+        aria-expanded="false"><span class="cv"></span><span class="cx"></span></button>
+        <div class="sel-menu" role="listbox" tabindex="-1"></div>`;
+      nat.parentNode.insertBefore(box,nat);
+      box.appendChild(nat);
+      nat._sel=box;
+      const btn=box.querySelector(".sel-btn");
+      btn.onclick=e=>{e.stopPropagation();toggleSel(box);};
+      btn.onkeydown=e=>{
+        if(e.key==="ArrowDown"||e.key==="Enter"||e.key===" "){e.preventDefault();toggleSel(box,true);}
+      };
+      box.querySelector(".sel-menu").onkeydown=e=>menuKeys(e,box);
+    }
+    syncSel(box);
+  });
+}
+
+function syncSel(box){
+  const nat=box.querySelector("select"), menu=box.querySelector(".sel-menu");
+  box.querySelector(".cv").textContent =
+    nat.selectedIndex>=0 ? nat.options[nat.selectedIndex].textContent : "";
+  menu.innerHTML=[...nat.options].map((o,ix)=>
+    `<div class="sel-opt" role="option" data-ix="${ix}"
+      aria-selected="${o.selected}"><span class="tick">✓</span>
+      <span>${esc(o.textContent)}</span></div>`).join("");
+  menu.querySelectorAll(".sel-opt").forEach(el=>{
+    el.onclick=e=>{
+      e.stopPropagation();
+      nat.selectedIndex=Number(el.dataset.ix);
+      // A real change event, so existing .onchange handlers fire untouched.
+      nat.dispatchEvent(new Event("change",{bubbles:true}));
+      syncSel(box); closeSel(box);
+      box.querySelector(".sel-btn").focus();
+    };
+  });
+}
+
+function closeSel(b){ b.dataset.open="false";
+  b.querySelector(".sel-btn").setAttribute("aria-expanded","false"); }
+
+function toggleSel(box,force){
+  const open = force || box.dataset.open!=="true";
+  $$(".sel").forEach(b=>{ if(b!==box) closeSel(b); });
+  box.dataset.open = open ? "true" : "false";
+  box.querySelector(".sel-btn").setAttribute("aria-expanded", open?"true":"false");
+  if(open){
+    const cur=box.querySelector(".sel-opt[aria-selected=true]")||box.querySelector(".sel-opt");
+    if(cur){ cur.classList.add("active");
+      if(cur.scrollIntoView) cur.scrollIntoView({block:"nearest"}); }
+    box.querySelector(".sel-menu").focus();
+  }
+}
+
+function menuKeys(e,box){
+  const opts=[...box.querySelectorAll(".sel-opt")];
+  let i=opts.findIndex(o=>o.classList.contains("active"));
+  if(e.key==="Escape"){ closeSel(box); box.querySelector(".sel-btn").focus(); e.preventDefault(); }
+  else if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+    e.preventDefault();
+    opts.forEach(o=>o.classList.remove("active"));
+    i = e.key==="ArrowDown" ? Math.min(i+1,opts.length-1) : Math.max(i-1,0);
+    opts[i].classList.add("active");
+    if(opts[i].scrollIntoView) opts[i].scrollIntoView({block:"nearest"});
+  }
+  else if(e.key==="Enter"||e.key===" "){ e.preventDefault(); if(i>=0) opts[i].click(); }
+}
+
+document.addEventListener("click",()=>$$(".sel").forEach(closeSel));
+
+function localStamp(iso){
+  if(!iso) return "–";
+  const d=new Date(iso);
+  if(isNaN(d)) return iso;
+  // Locale-aware, in the reader's own timezone, with the zone named so a
+  // reader in another office knows which clock this is.
+  try{
+    return new Intl.DateTimeFormat(LANG==="ar"?"ar-u-nu-latn":"en-GB",
+      {dateStyle:"medium",timeStyle:"short",timeZoneName:"short"}).format(d);
+  }catch(e){ return d.toLocaleString(); }
+}
+
 function trLabel(t){
   const pct=t.severity_change_pct;
   if(t.label===NOCOV) return `<span class="badge est" title="${esc(t.basis||"")}">${T("tr_nc")}</span>`;
@@ -838,8 +1059,9 @@ function openIncident(i){
   });
   if(i.latitude!=null && i.geo_precision!==3){
     setTimeout(()=>{
+      if(typeof L==="undefined"){ box.innerHTML=`<div class="empty">${T("mapOffline")}</div>`; return; }
       const m=L.map("incmap",{attributionControl:false,zoomControl:false}).setView([i.latitude,i.longitude],9);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png").addTo(m);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(m);
       L.circleMarker([i.latitude,i.longitude],{radius:7,color:"#8d2020",fillColor:"#c04f2c",
         fillOpacity:.85,weight:2}).addTo(m);
     },40);
@@ -943,11 +1165,18 @@ function renderProx(){
 /* ---------- map ---------- */
 function initMap(){
   if(MAP) return;
+  if(typeof L==="undefined"){ mapUnavailable(); return; }
   MAP=L.map("map",{worldCopyJump:true}).setView([26,26],3);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    {attribution:"&copy; OpenStreetMap, &copy; CARTO",maxZoom:18}).addTo(MAP);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {attribution:"&copy; OpenStreetMap contributors",maxZoom:18}).addTo(MAP);
   LAYER=L.layerGroup().addTo(MAP);
 }
+function mapUnavailable(){
+  const el=$("#map");
+  if(el) el.innerHTML=`<div class="empty" style="padding:40px 20px">${T("mapOffline")}</div>`;
+  const c=$("#m-count"); if(c) c.textContent="";
+}
+
 function renderMap(){
   if(!MAP) return;
   LAYER.clearLayers();
@@ -994,7 +1223,7 @@ function boot(data){
   fillSelect($("#m-country"),D.countries.map(c=>({v:c.country,t:CTRY(c.country)}))
     .sort((a,b)=>a.t.localeCompare(b.t,LANG)),T("allCountriesOpt"));
   fillSelect($("#f-status"),[...new Set(D.countries.map(c=>c.danger_status))].map(s=>({v:s,t:s})),T("all"));
-  ["#q","#f-region","#f-cat","#f-trend","#f-status"].forEach(s=>{
+  ["#q","#f-region","#f-cat","#f-trend","#f-status","#f-scope"].forEach(s=>{
     $(s).addEventListener("input",renderTable)});
   $$(".winsel button").forEach(b=>b.onclick=()=>{
     WIN=b.dataset.win;
@@ -1003,6 +1232,7 @@ function boot(data){
   });
   $("#backGlobal").onclick=()=>show("global");
   ["#cCat","#cCity"].forEach(s=>$(s).addEventListener("change",renderCountry));
+  enhanceSelects();
   ["#m-country","#m-cat","#m-win","#m-fatal"].forEach(s=>$(s).addEventListener("change",renderMap));
   renderTable();
 }
