@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>لوحة الأمن والخطر العالمية</title>
+<title>Security &amp; Danger Dashboard</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -262,6 +262,17 @@ select.enhanced{position:absolute;width:1px;height:1px;opacity:0;pointer-events:
   .sel-btn{width:100%}
   .sel-menu{max-height:60vh}
 }
+.srcbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+  padding:8px 16px;background:var(--surface-2);border-bottom:var(--hair);
+  font-size:11.5px;color:var(--muted)}
+.srcbar a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.srcbar a:hover{border-bottom-color:currentColor}
+.srcbar .eff{color:var(--muted);font-variant-numeric:tabular-nums}
+.badge.desig{background:#e7eef7;color:#1f4b7d;border:1px solid #c3d5ea;font-weight:600}
+.badge.meas{background:transparent;color:var(--muted);border:1px solid var(--rule)}
+.badge.div{background:#fff4e0;color:#7a4a00;border:1px solid #f0d9ab}
+td.status{white-space:nowrap}
+@media(max-width:860px){.srcbar{padding:8px 10px;font-size:11px}}
 html[dir=rtl]{--panel-hidden:-100%}
 html[dir=rtl] body{font-family:var(--ar);font-size:14.5px;line-height:1.7}
 html[dir=rtl] .status .brand{font-size:15.5px}
@@ -324,6 +335,7 @@ td.country,thead th.country{inset-inline-start:40px}
     </div>
     <span class="pill" id="rowcount"></span>
   </div>
+  <div class="srcbar" id="srcbar"></div>
   <div class="tablewrap"><div class="cards" id="cards"></div><table id="tbl"><thead></thead><tbody></tbody></table></div>
 </section>
 
@@ -411,18 +423,30 @@ const COLS = ["ARMED_CONFLICT","AIR_MISSILE_DRONE","TERRORISM_IED","VIOLENCE_AGA
 let LANG = localStorage.getItem("gsd_lang") || "ar";
 const DICT={
  ar:{
-  brand:"لوحة الأمن والخطر العالمية", lastRefresh:"آخر تحديث",
+  brand:"لوحة الأمن والخطر", lastRefresh:"آخر تحديث",
   latestEventDate:"تاريخ أحدث حدث", coverageStart:"بداية تغطية البيانات",
-  incidentsStored:"الحوادث المخزّنة", rawEvents:"سجلات GDELT الأولية",
+  incidentsStored:"الحوادث المخزّنة", rawEvents:"السجلات الأولية",
   vGlobal:"عالمي", vCountry:"الدولة", vMap:"الخريطة",
   search:"ابحث في الدول أو نص الحوادث", region:"المنطقة", category:"التصنيف",
   trend:"الاتجاه", danger:"الخطر", all:"الكل", window:"النافذة",
   w7:"7 أيام", w30:"30 يومًا", w90:"90 يومًا", wall:"كامل المخزون",
   c7:"7 أيام", c30:"30 يومًا", c90:"90 يومًا",
   mapOffline:"تعذّر تحميل مكتبة الخرائط. تحقّق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. باقي اللوحة يعمل دون الخريطة.",
+  officialSources:"المصادر الرسمية", effective:"سارٍ من",
+  srcIcsc:"لجنة الخدمة المدنية الدولية — بدل الخطر (الأمم المتحدة)",
+  srcDssr:"وزارة الخارجية الأمريكية — DSSR 650",
+  designationNote:"التصنيف الرسمي يصدر عن هاتين الجهتين؛ هذه اللوحة تقيس ولا تُصنِّف.",
+  designated:"مُصنَّف رسميًا",
+  band_MEASURED_TOP_DECILE:"الأعلى 10% قياسًا", band_MEASURED_UPPER_QUARTILE:"الربع الأعلى قياسًا",
+  band_MEASURED_UPPER_HALF:"النصف الأعلى قياسًا", band_MEASURED_LOWER_HALF:"النصف الأدنى قياسًا",
+  band_NO_RECORDED_INCIDENTS:"لا حوادث مسجّلة", band_NOT_RANKED:"غير مُدرَج في الترتيب",
+  div_MEASURED_HIGH_NOT_DESIGNATED:"قياس مرتفع دون تصنيف",
+  div_MEASURED_HIGH_NOT_DESIGNATED_hint:"القياس يضع هذه الدولة ضمن الأعلى 10% بينما لا يوجد تصنيف رسمي لبدل الخطر. يستحق مراجعة اللجنة.",
+  div_DESIGNATED_BUT_QUIET:"مُصنَّف والقياس منخفض",
+  div_DESIGNATED_BUT_QUIET_hint:"توجد جهة رسمية تُصنِّف هذه الدولة، بينما القياس من الحوادث المخزّنة منخفض. قد تكون الظروف قد خفّت، أو قد تكون التغطية الإعلامية تراجعت. لا تُحسم من اللوحة وحدها.",
   scope:"النطاق", scopeCountries:"الدول فقط", scopeAll:"كل المُدخلات",
   scope_WATERS:"مياه/بحار", scope_REGION:"إقليم", scope_UNRESOLVED:"موقع غير محدد",
-  storedFrom:"المخزّن من", gapHint:"المخزون يبدأ بعد بداية تغطية GDELT. الفترة الأسبق لم تُستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغّل التحديث مع خيار الاستيراد الكامل (backfill).",
+  storedFrom:"المخزّن من", gapHint:"المخزون يبدأ بعد بداية تغطية المصدر. الفترة الأسبق لم تُستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغّل التحديث مع خيار الاستيراد الكامل (backfill).",
   lw7:"آخر 7 أيام", lw30:"آخر 30 يومًا", lw90:"آخر 90 يومًا", lwall:"كامل السجل المخزّن",
   country:"الدولة", dangerStatus:"حالة الخطر", prev30:"الـ30 السابقة",
   chg30:"التغير خلال 30 يومًا", fat30:"وفيات 30 يومًا", fat90:"وفيات 90 يومًا",
@@ -437,34 +461,34 @@ const DICT={
   countriesWord:"دولة", incidentsWord:"حادث في المخزون", incidentsWord2:"حادث",
   tr_esc:"تصعيد كبير", tr_det:"تدهور", tr_sta:"مستقر", tr_imp:"تحسّن",
   tr_nc:"سجل غير كافٍ", tr_na:"لا نشاط",
-  world:"العالم", incident:"حادث", gdeltEvent:"حدث GDELT", sourceArticle:"المقال المصدر",
+  world:"العالم", incident:"حادث", gdeltEvent:"السجل المصدري", sourceArticle:"المقال المصدر",
   auditCat:(n,cat,a,b,w,c)=>`هذه هي الحوادث الـ<b>${n}</b> ذاتها التي ينتج عنها الرقم الظاهر في الجدول.
     الأساس: التصنيف الأمني <b>${cat}</b>، وتاريخ الحدث بين <b>${a}</b> و<b>${b}</b> (${w})، والدولة <b>${c}</b>.
     تغيير النافذة الزمنية في شريط الأدوات يغيّر العدد وهذه القائمة معًا.`,
-  auditInc:(id,n)=>`الحادث <b>${id}</b> يوحّد <b>${n}</b> من سجلات أحداث GDELT.
+  auditInc:(id,n)=>`الحادث <b>${id}</b> يوحّد <b>${n}</b> من السجلات المصدرية.
     كل رقم أدناه مخزَّن، ولم يُشتق لحظة العرض.`,
   auditProx:(n,city,w)=>`<b>${n}</b> حادث، مقيسة من ${city} باستخدام الإحداثيات المخزّنة لكل حادث. الأساس: ${w}.`,
   noneCell:"لا توجد حوادث في هذه الخانة ضمن النافذة المحددة.",
   untitled:"حادث بلا عنوان", killed:"قتيل", disputedShort:"(متنازع عليه)",
-  mergedN:"دُمج % من سجلات GDELT", intercepted:"اعتُرض / بلا أثر",
+  mergedN:"دُمج % من السجلات المصدرية", intercepted:"اعتُرض / بلا أثر",
   geoUnres:"الموقع الجغرافي غير محدد",
   date:"التاريخ", adminRegion:"المنطقة الإدارية", place:"الموقع", coords:"الإحداثيات",
   secCat:"التصنيف الأمني", secSub:"النوع الفرعي", overlays:"مؤشرات إضافية",
-  nativeCat:"تصنيف GDELT الأصلي", catDispute:"تعارض في التصنيف",
+  nativeCat:"التصنيف المصدري الأصلي", catDispute:"تعارض في التصنيف",
   codedDiff:"السجلات المدمجة رُمّزت بشكل مختلف", actors:"الأطراف", orgs:"المنظمات",
   fatalities:"الوفيات المبلغ عنها", sourcesDiffer:"المصادر متباينة",
-  goldstein:"مقياس غولدستاين", significance:"الأهمية", gdeltConf:"درجة ثقة GDELT",
+  goldstein:"مقياس غولدستاين", significance:"الأهمية", gdeltConf:"درجة الثقة",
   verification:"التحقق", impact:"وقوع الأثر", corrob:"المقالات المؤيدة",
   yes:"نعم", noIntercept:"لا — اعتُرض السلاح أو أُحبط",
   notReported:"غير مُبلَّغ عنه", notAssigned:"غير محدد", notScored:"غير مُقيَّم",
   none:"لا يوجد", noneLinked:"لا توجد", noSummary:"لا يوجد ملخص.",
-  summaryCoded:"الملخص كما ورد في المصدر", contribRecords:"سجلات أحداث GDELT المكوِّنة",
-  stories:"قصص GDELT Cloud", noStory:"لا يوجد رابط قصة على هذه السجلات.",
+  summaryCoded:"الملخص كما ورد في المصدر", contribRecords:"السجلات المصدرية المكوِّنة",
+  stories:"الروابط المرجعية", openRef:"فتح المرجع", noStory:"لا توجد روابط مرجعية على هذه السجلات.",
   sourceArticles:"المقالات المصدرية الأصلية", via:"عبر",
   noSources:"لا توجد مقالات مصدرية مرفقة.", dedup:"إزالة التكرار",
   method:"الطريقة", confidence:"درجة الثقة",
   singleRecord:"سجل واحد؛ لم يُطبَّق أي توحيد.",
-  rawNote:"تُحفظ سجلات GDELT الأولية دون تغيير في جدول raw_events. التوحيد ينشئ صفّ حادث جديدًا ولا يستبدل الأصول أو يحذفها إطلاقًا.",
+  rawNote:"تُحفظ السجلات الأولية دون تغيير في جدول raw_events. التوحيد ينشئ صفّ حادث جديدًا ولا يستبدل الأصول أو يحذفها إطلاقًا.",
   noCoords:"لا توجد إحداثيات صالحة", unknownPrec:"دقة غير معروفة",
   noCountrySel:"لم تُحدَّد دولة", allCats:"كل التصنيفات", allRegions:"كل المناطق",
   allCountriesOpt:"كل الدول", allCountries:"→ كل الدول",
@@ -482,18 +506,30 @@ const DICT={
   loadFail:"تعذّر تحميل ملف data.json. شغّل أولًا:"
  },
  en:{
-  brand:"Global Security &amp; Danger Dashboard", lastRefresh:"Last refresh",
+  brand:"Security &amp; Danger Dashboard", lastRefresh:"Last refresh",
   latestEventDate:"Latest event date", coverageStart:"Data coverage start",
-  incidentsStored:"Incidents in store", rawEvents:"Raw GDELT events",
+  incidentsStored:"Incidents in store", rawEvents:"Raw source records",
   vGlobal:"Global", vCountry:"Country", vMap:"Map",
   search:"Search country or incident text", region:"Region", category:"Category",
   trend:"Trend", danger:"Danger", all:"All", window:"Window",
   w7:"7 days", w30:"30 days", w90:"90 days", wall:"Full store",
   c7:"7d", c30:"30d", c90:"90d",
   mapOffline:"The map library could not load. Check the network connection and reload. The rest of the dashboard works without it.",
+  officialSources:"Official sources", effective:"effective",
+  srcIcsc:"UN ICSC \u2014 Danger Pay duty stations",
+  srcDssr:"US Dept. of State \u2014 DSSR 650",
+  designationNote:"Designation is made by these bodies; this dashboard measures, it does not designate.",
+  designated:"Designated",
+  band_MEASURED_TOP_DECILE:"top decile measured", band_MEASURED_UPPER_QUARTILE:"upper quartile measured",
+  band_MEASURED_UPPER_HALF:"upper half measured", band_MEASURED_LOWER_HALF:"lower half measured",
+  band_NO_RECORDED_INCIDENTS:"no recorded incidents", band_NOT_RANKED:"not ranked",
+  div_MEASURED_HIGH_NOT_DESIGNATED:"high, undesignated",
+  div_MEASURED_HIGH_NOT_DESIGNATED_hint:"Measures in the top decile with no official danger-pay designation. Worth a committee look.",
+  div_DESIGNATED_BUT_QUIET:"designated, measures quiet",
+  div_DESIGNATED_BUT_QUIET_hint:"An authority designates this country while the stored incidents measure low. Conditions may have abated, or coverage may have fallen away. Not resolvable from this dashboard alone.",
   scope:"Scope", scopeCountries:"Countries only", scopeAll:"All entries",
   scope_WATERS:"waters", scope_REGION:"region", scope_UNRESOLVED:"unresolved",
-  storedFrom:"Stored from", gapHint:"The store begins after GDELT's coverage start. The earlier period has not been ingested; that is not the same as zero events. Run the workflow with backfill enabled.",
+  storedFrom:"Stored from", gapHint:"The store begins after the source coverage start. The earlier period has not been ingested; that is not the same as zero events. Run the workflow with backfill enabled.",
   lw7:"last 7 days", lw30:"last 30 days", lw90:"last 90 days", lwall:"full stored history",
   country:"Country", dangerStatus:"Danger status", prev30:"Prev 30d",
   chg30:"30d change", fat30:"30d fatal.", fat90:"90d fatal.",
@@ -508,36 +544,36 @@ const DICT={
   countriesWord:"countries", incidentsWord:"incidents in store", incidentsWord2:"incidents",
   tr_esc:"SIGNIFICANT ESCALATION", tr_det:"DETERIORATING", tr_sta:"STABLE",
   tr_imp:"IMPROVING", tr_nc:"insufficient history", tr_na:"NO ACTIVITY",
-  world:"World", incident:"Incident", gdeltEvent:"GDELT event", sourceArticle:"source article",
+  world:"World", incident:"Incident", gdeltEvent:"source record", sourceArticle:"source article",
   auditCat:(n,cat,a,b,w,c)=>`These are the exact <b>${n}</b> incident(s) that produce the figure
     shown in the table. Basis: security category <b>${cat}</b>, event date between <b>${a}</b> and
     <b>${b}</b> (${w}), country <b>${c}</b>. Changing the window in the toolbar changes both the
     count and this list together.`,
-  auditInc:(id,n)=>`Incident <b>${id}</b> consolidates <b>${n}</b> GDELT event record(s).
+  auditInc:(id,n)=>`Incident <b>${id}</b> consolidates <b>${n}</b> source record(s).
     Every figure below is stored, not derived at display time.`,
   auditProx:(n,city,w)=>`<b>${n}</b> incident(s), measured from ${city} using each incident's own
     stored coordinates. Basis: ${w}.`,
   noneCell:"No incidents in this cell for the selected window.",
   untitled:"Untitled incident", killed:"killed", disputedShort:"(disputed)",
-  mergedN:"% GDELT records merged", intercepted:"intercepted / no impact",
+  mergedN:"% source records merged", intercepted:"intercepted / no impact",
   geoUnres:"geography unresolved",
   date:"Date", adminRegion:"Admin region", place:"Place", coords:"Coordinates",
   secCat:"Security category", secSub:"Security subtype", overlays:"Overlay flags",
-  nativeCat:"Native GDELT category", catDispute:"Category dispute",
+  nativeCat:"Original source category", catDispute:"Category dispute",
   codedDiff:"merged records coded differently", actors:"Actors", orgs:"Organizations",
   fatalities:"Reported fatalities", sourcesDiffer:"sources differ",
-  goldstein:"Goldstein scale", significance:"Significance", gdeltConf:"GDELT confidence",
+  goldstein:"Goldstein scale", significance:"Significance", gdeltConf:"Source confidence",
   verification:"Verification", impact:"Impact realised", corrob:"Corroborating articles",
   yes:"yes", noIntercept:"no &mdash; weapon intercepted or disrupted",
   notReported:"not reported", notAssigned:"not assigned", notScored:"not scored",
   none:"none", noneLinked:"none linked", noSummary:"No summary available.",
-  summaryCoded:"Summary as coded", contribRecords:"Contributing GDELT event records",
-  stories:"GDELT Cloud stories", noStory:"No story URL on these records.",
+  summaryCoded:"Summary as coded", contribRecords:"Contributing source records",
+  stories:"Reference links", openRef:"Open reference", noStory:"No reference links on these records.",
   sourceArticles:"Original source articles", via:"via",
   noSources:"No source articles attached.", dedup:"Deduplication",
   method:"Method", confidence:"Confidence",
   singleRecord:"Single record; no consolidation was applied.",
-  rawNote:"Raw GDELT records are retained unchanged in raw_events. Consolidation creates a new incident row and never overwrites or deletes the originals.",
+  rawNote:"Raw source records are retained unchanged in raw_events. Consolidation creates a new incident row and never overwrites or deletes the originals.",
   noCoords:"no usable coordinates", unknownPrec:"unknown precision",
   noCountrySel:"No country selected", allCats:"All categories", allRegions:"All regions",
   allCountriesOpt:"All countries", allCountries:"&larr; All countries",
@@ -662,8 +698,8 @@ const CTRY=c=>{
 function applyStatic(){
   document.documentElement.lang = LANG;
   document.documentElement.dir  = LANG==="ar" ? "rtl" : "ltr";
-  document.title = LANG==="ar" ? "لوحة الأمن والخطر العالمية"
-                               : "Global Security & Danger Dashboard";
+  document.title = LANG==="ar" ? "لوحة الأمن والخطر"
+                               : "Security & Danger Dashboard";
   $$("[data-i18n]").forEach(el=>el.innerHTML=T(el.dataset.i18n));
   $$("[data-i18n-ph]").forEach(el=>el.placeholder=T(el.dataset.i18nPh));
 }
@@ -711,13 +747,40 @@ function select({country=null,category=null,win=WIN,fatalOnly=false,text=null,ov
 const sevClass=n=>n===0?"zero":n<3?"sev1":n<8?"sev2":n<20?"sev3":"sev4";
 
 /* ---------- status strip ---------- */
+function renderSources(){
+  const el=$("#srcbar"); if(!el||!D.meta.designation_sources) return;
+  const s=D.meta.designation_sources;
+  el.innerHTML=`<span>${T("officialSources")}:</span>
+    <span><a href="${esc(s.icsc.list_url)}" target="_blank" rel="noopener">${T("srcIcsc")}</a>
+      <span class="eff">(${esc(s.icsc.current_period)})</span></span>
+    <span><a href="${esc(s.dssr650.list_url)}" target="_blank" rel="noopener">${T("srcDssr")}</a>
+      <span class="eff">(${T("effective")} ${esc(s.dssr650.rates_effective)})</span></span>
+    <span class="eff">${T("designationNote")}</span>`;
+}
+
+function statusCell(r){
+  const d=r.designation||{}, m=r.measurement||{};
+  if(r.committee_override)
+    return `<span class="badge desig" title="${esc(r.danger_basis||"")}">${esc(r.committee_override)}</span>`;
+  const bits=[];
+  if(d.designated){
+    const rate=(d.dssr650&&d.dssr650.max_rate)?` ${d.dssr650.max_rate}%`:"";
+    bits.push(`<span class="badge desig" title="${esc(r.danger_basis||"")}">${T("designated")}${rate}</span>`);
+  }else{
+    bits.push(`<span class="badge meas" title="${esc(m.reason||r.danger_basis||"")}">${esc(T("band_"+m.band))}</span>`);
+  }
+  if(r.divergence)
+    bits.push(`<span class="badge div" title="${esc(T("div_"+r.divergence+"_hint"))}">${esc(T("div_"+r.divergence))}</span>`);
+  return bits.join(" ");
+}
+
 function renderStatus(){
   const m=D.meta, stale=m.latest_event_date && m.latest_event_date < bounds("d7")[0];
   // A store starting later than GDELT coverage means history was never fetched.
   // Flagging it is the difference between "quiet" and "not looked".
   const gap = m.store_earliest_event && m.store_earliest_event > m.coverage_start;
   $("#status").innerHTML=`
-    <div class="brand">${T("brand")} <span>GDELT Cloud</span></div>
+    <div class="brand">${T("brand")}</div>
     <div class="stat"><i>${T("lastRefresh")}</i><b>${esc(localStamp(m.last_refresh))}</b></div>
     <div class="stat ${stale?"warn":""}"><i>${T("latestEventDate")}</i><b>${esc(m.latest_event_date||T("none"))}</b></div>
     <div class="stat"><i>${T("coverageStart")}</i><b>${esc(m.coverage_start)}</b></div>
@@ -827,7 +890,7 @@ function renderTable(){
     return `<tr>
       <td class="serial num">${_ix+1}</td>
       <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(CTRY(r.country))}</button></td>
-      <td class="l"><span class="status-tag">${esc(r.danger_status)}</span></td>
+      <td class="l status">${statusCell(r)}</td>
       <td class="num">${r.d7_incidents}</td><td class="num">${r.d30_incidents}</td>
       <td class="num">${r.prev30_covered?r.prev30_incidents:`<span class="badge est" title="${T("noCovHint")}">${T("noCoverage")}</span>`}</td>
       <td class="num delta ${r.prev30_covered&&r.chg>0?"pos":r.prev30_covered&&r.chg<0?"neg":""}">${!r.prev30_covered?"&ndash;":r.chg===null?"&ndash;":(r.chg>0?"+":"")+Math.round(r.chg*100)+"%"}</td>
@@ -844,6 +907,7 @@ function renderTable(){
 
   $("#rowcount").textContent=`${rows.length} ${T("countriesWord")} \u00b7 ${D.meta.total_incidents} ${T("incidentsWord")}`;
   renderCards(rows);
+  renderSources();
   wire();
 }
 const trCls=l=>l==="SIGNIFICANT ESCALATION"?"t-esc":l==="DETERIORATING"?"t-up":l==="IMPROVING"?"t-down":"t-flat";
@@ -1040,8 +1104,8 @@ function openIncident(i){
       <ul class="srcs">${i.event_ids.map(e=>`<li><span class="dom">${esc(e)}</span></li>`).join("")}</ul>
 
       <h4 class="sec">${T("stories")}</h4>
-      <ul class="srcs">${(i.story_urls||[]).length? i.story_urls.map(u=>
-        `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a></li>`).join("")
+      <ul class="srcs">${(i.story_urls||[]).length? i.story_urls.map((u,ix)=>
+        `<li><a href="${esc(u)}" target="_blank" rel="noopener">${T("openRef")} ${ix+1}</a></li>`).join("")
         : `<li>${T("noStory")}</li>`}</ul>
 
       <h4 class="sec">${T("sourceArticles")} (${(i.sources||[]).length})</h4>
