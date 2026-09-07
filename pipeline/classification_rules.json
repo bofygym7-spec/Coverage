@@ -1,0 +1,193 @@
+{
+  "version": "1.1.0",
+  "updated": "2026-09-07",
+  "notes": "Deterministic first-pass classifier. Maps GDELT Cloud native (category, subcategory) pairs onto the 11 security categories. Native taxonomy is always preserved separately on the event row. Nothing here invents data; where evidence is inadequate the event is marked INSUFFICIENT_EVENT_LEVEL_VERIFICATION.",
+
+  "physical_security_relevant": {
+    "comment": "Gate 1. An event must pass this gate before it is counted as physical danger at all. Categories absent from this list are ingested and stored, but never counted toward danger metrics.",
+    "include_categories": [
+      "Battles",
+      "Explosions/Remote violence",
+      "Violence against civilians",
+      "Riots"
+    ],
+    "conditional_categories": {
+      "Strategic developments": {
+        "comment": "Mixed bucket. Only these subcategories carry a physical-security component; the rest are administrative or diplomatic.",
+        "include_subcategories": [
+          "Looting/property destruction",
+          "Headquarters or base established",
+          "Change to group/activity",
+          "Non-state actor overtakes territory",
+          "Disrupted weapons use"
+        ]
+      }
+    },
+    "excluded_categories": [
+      "Protests",
+      "POLITICAL",
+      "ECONOMIC",
+      "CORPORATE",
+      "TECHNOLOGY",
+      "ENVIRONMENT",
+      "HEALTH",
+      "DEMOGRAPHIC",
+      "INFORMATION"
+    ],
+    "excluded_subcategories": [
+      "Arrests",
+      "Agreement",
+      "Non-violent transfer of territory",
+      "Other",
+      "Peaceful protest",
+      "Protest with intervention",
+      "Excessive force against protesters"
+    ],
+    "exclusion_rationale": "Peaceful protest, speeches, elections, diplomatic disagreement, political statements, arrests and negative media coverage are not physical danger. Article volume is never treated as danger."
+  },
+
+  "category_map": {
+    "comment": "Gate 2. (native_category :: native_subcategory) -> security category. '*' matches any subcategory.",
+    "rules": [
+      { "native_category": "Battles", "native_subcategory": "Armed clash", "security_category": "ARMED_CONFLICT", "security_subtype": "Armed clash" },
+      { "native_category": "Battles", "native_subcategory": "Government regains territory", "security_category": "ARMED_CONFLICT", "security_subtype": "Territorial change - government" },
+      { "native_category": "Battles", "native_subcategory": "Non-state actor overtakes territory", "security_category": "STATE_CONTROL_BREAKDOWN", "security_subtype": "Non-state actor seizes territory" },
+      { "native_category": "Battles", "native_subcategory": "*", "security_category": "ARMED_CONFLICT", "security_subtype": null },
+
+      { "native_category": "Explosions/Remote violence", "native_subcategory": "Air/drone strike", "security_category": "AIR_MISSILE_DRONE", "security_subtype": "Air or drone strike" },
+      { "native_category": "Explosions/Remote violence", "native_subcategory": "Shelling/artillery/missile attack", "security_category": "AIR_MISSILE_DRONE", "security_subtype": "Shelling, artillery or missile" },
+      { "native_category": "Explosions/Remote violence", "native_subcategory": "Remote explosive/landmine/IED", "security_category": "TERRORISM_IED", "security_subtype": "Remote explosive, landmine or IED" },
+      { "native_category": "Explosions/Remote violence", "native_subcategory": "Suicide bomb", "security_category": "TERRORISM_IED", "security_subtype": "Suicide bombing" },
+      { "native_category": "Explosions/Remote violence", "native_subcategory": "Grenade", "security_category": "TERRORISM_IED", "security_subtype": "Grenade attack" },
+      { "native_category": "Explosions/Remote violence", "native_subcategory": "*", "security_category": "AIR_MISSILE_DRONE", "security_subtype": null },
+
+      { "native_category": "Violence against civilians", "native_subcategory": "Abduction/forced disappearance", "security_category": "KIDNAPPING", "security_subtype": "Abduction or forced disappearance" },
+      { "native_category": "Violence against civilians", "native_subcategory": "Sexual violence", "security_category": "VIOLENCE_AGAINST_CIVILIANS", "security_subtype": "Sexual violence" },
+      { "native_category": "Violence against civilians", "native_subcategory": "Attack", "security_category": "VIOLENCE_AGAINST_CIVILIANS", "security_subtype": "Attack on civilians" },
+      { "native_category": "Violence against civilians", "native_subcategory": "*", "security_category": "VIOLENCE_AGAINST_CIVILIANS", "security_subtype": null },
+
+      { "native_category": "Riots", "native_subcategory": "Violent demonstration", "security_category": "VIOLENT_UNREST", "security_subtype": "Violent demonstration" },
+      { "native_category": "Riots", "native_subcategory": "Mob violence", "security_category": "VIOLENT_UNREST", "security_subtype": "Mob violence" },
+      { "native_category": "Riots", "native_subcategory": "*", "security_category": "VIOLENT_UNREST", "security_subtype": null },
+
+      { "native_category": "Strategic developments", "native_subcategory": "Looting/property destruction", "security_category": "VIOLENT_UNREST", "security_subtype": "Looting or property destruction" },
+      { "native_category": "Strategic developments", "native_subcategory": "Headquarters or base established", "security_category": "ARMED_GROUPS", "security_subtype": "Armed group base established" },
+      { "native_category": "Strategic developments", "native_subcategory": "Change to group/activity", "security_category": "ARMED_GROUPS", "security_subtype": "Change to armed group activity" },
+      { "native_category": "Strategic developments", "native_subcategory": "Non-state actor overtakes territory", "security_category": "STATE_CONTROL_BREAKDOWN", "security_subtype": "Non-state actor seizes territory" },
+      { "native_category": "Strategic developments", "native_subcategory": "Disrupted weapons use", "security_category": "AIR_MISSILE_DRONE", "security_subtype": "Intercepted or disrupted weapon", "impact_realised": false },
+
+      { "native_category": "CRIME", "native_subcategory": "*", "security_category": "OTHER_SERIOUS_THREAT", "security_subtype": null, "requires_overlay": true },
+      { "native_category": "INFRASTRUCTURE", "native_subcategory": "*", "security_category": "TRANSPORT_ACCESS_DISRUPTION", "security_subtype": null, "requires_overlay": true }
+    ]
+  },
+
+  "overlays": {
+    "comment": "Gate 3. Overlays are ADDITIVE cross-cutting flags matched on title + summary + actor names. An event keeps its primary category from Gate 2 and gains overlay categories here. Two overlays can also PROMOTE an event to a new primary category when the promote flag is set, because 'attack on an embassy' is more operationally meaningful than 'explosion'.",
+    "definitions": [
+      {
+        "id": "FOREIGN_DIPLOMATIC_TARGET",
+        "label": "Foreign / diplomatic targeting",
+        "promote": true,
+        "min_matches": 1,
+        "keywords": [
+          "embassy", "embassies", "consulate", "consular", "ambassador", "diplomat", "diplomatic mission",
+          "chancery", "high commission", "legation", "chargé d'affaires", "charge d'affaires",
+          "united nations", "unifil", "unrwa", "unhcr", "unmiss", "monusco", "peacekeeper", "peacekeeping",
+          "red cross", "icrc", "red crescent", "msf", "doctors without borders", "aid worker", "humanitarian worker",
+          "foreign national", "foreign nationals", "expatriate", "foreign tourist", "foreign workers",
+          "international organization", "international organisation", "ngo staff", "un staff", "un compound"
+        ],
+        "negative_keywords": ["embassy row", "former ambassador", "ambassador of goodwill"]
+      },
+      {
+        "id": "TRANSPORT_ACCESS_DISRUPTION",
+        "label": "Transport / access disruption",
+        "promote": false,
+        "min_matches": 1,
+        "keywords": [
+          "airport", "airfield", "air base", "airbase", "runway", "airspace", "flight suspended",
+          "flights cancelled", "flights canceled", "air traffic", "no-fly", "notam",
+          "seaport", "port of", "harbour", "harbor", "shipping lane", "maritime corridor", "vessel attacked",
+          "border crossing", "border post", "frontier crossing", "checkpoint closed", "border closed",
+          "highway", "motorway", "main road", "road blocked", "road closure", "roadblock", "route blocked",
+          "railway", "rail line", "train station", "bridge destroyed", "bridge struck", "evacuation route"
+        ],
+        "negative_keywords": []
+      },
+      {
+        "id": "STATE_CONTROL_BREAKDOWN",
+        "label": "Coup / breakdown of state security control",
+        "promote": true,
+        "min_matches": 1,
+        "keywords": [
+          "coup", "coup d'etat", "coup d'état", "junta", "seized power", "military takeover",
+          "mutiny", "presidential palace stormed", "government collapse", "state of emergency declared",
+          "martial law", "security forces defect", "prison break", "mass jailbreak"
+        ],
+        "negative_keywords": ["coup de grace", "attempted coup foiled years", "coup in 19"]
+      },
+      {
+        "id": "KIDNAPPING",
+        "label": "Kidnapping / hostage-taking",
+        "promote": true,
+        "min_matches": 1,
+        "keywords": [
+          "kidnap", "kidnapped", "kidnapping", "abduct", "abducted", "abduction",
+          "hostage", "hostages", "held captive", "forced disappearance", "ransom demand"
+        ],
+        "negative_keywords": []
+      },
+      {
+        "id": "ARMED_GROUPS",
+        "label": "Armed group / militia activity",
+        "promote": false,
+        "min_matches": 1,
+        "keywords": [
+          "militia", "militias", "armed group", "non-state armed", "insurgent", "insurgency",
+          "rebel", "rebels", "jihadist", "islamic state", "isis", "isil", "daesh", "al-qaeda", "al qaeda",
+          "al-shabaab", "boko haram", "hezbollah", "houthi", "taliban", "cartel", "paramilitary",
+          "rapid support forces", "wagner", "warlord"
+        ],
+        "negative_keywords": []
+      },
+      {
+        "id": "TERRORISM_IED",
+        "label": "Terrorism / bombing",
+        "promote": false,
+        "min_matches": 1,
+        "keywords": [
+          "terrorist attack", "terror attack", "car bomb", "vehicle-borne", "vbied", "ied",
+          "improvised explosive", "suicide bomber", "suicide attack", "roadside bomb", "booby trap"
+        ],
+        "negative_keywords": ["terrorism financing", "terror finance", "designated a terrorist organization"]
+      }
+    ]
+  },
+
+  "verification": {
+    "comment": "Gate 4. Confidence and evidence gating. Nothing is upgraded on the basis of article volume.",
+    "verified_min_confidence": 0.70,
+    "verified_min_articles": 2,
+    "insufficient_label": "INSUFFICIENT_EVENT_LEVEL_VERIFICATION",
+    "rules": [
+      "confidence >= verified_min_confidence AND article_count >= verified_min_articles -> VERIFIED_MULTI_SOURCE",
+      "confidence >= verified_min_confidence AND article_count == 1 -> VERIFIED_SINGLE_SOURCE",
+      "confidence < verified_min_confidence -> INSUFFICIENT_EVENT_LEVEL_VERIFICATION",
+      "no security_category resolved -> INSUFFICIENT_EVENT_LEVEL_VERIFICATION"
+    ]
+  },
+
+  "security_categories": {
+    "ARMED_CONFLICT":              { "n": 1,  "label": "Armed conflict / battles" },
+    "AIR_MISSILE_DRONE":           { "n": 2,  "label": "Airstrike / missile / drone / artillery" },
+    "TERRORISM_IED":               { "n": 3,  "label": "Terrorism / bombing / IED" },
+    "VIOLENCE_AGAINST_CIVILIANS":  { "n": 4,  "label": "Violence against civilians" },
+    "KIDNAPPING":                  { "n": 5,  "label": "Kidnapping / hostage-taking" },
+    "VIOLENT_UNREST":              { "n": 6,  "label": "Riots / violent unrest" },
+    "ARMED_GROUPS":                { "n": 7,  "label": "Armed groups / militias" },
+    "FOREIGN_DIPLOMATIC_TARGET":   { "n": 8,  "label": "Foreign / diplomatic targeting" },
+    "TRANSPORT_ACCESS_DISRUPTION": { "n": 9,  "label": "Transport / access disruption" },
+    "STATE_CONTROL_BREAKDOWN":     { "n": 10, "label": "Coup / state-control breakdown" },
+    "OTHER_SERIOUS_THREAT":        { "n": 11, "label": "Other serious physical threat" }
+  }
+}
