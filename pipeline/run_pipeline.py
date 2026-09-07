@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse, json, os, sys, traceback
 from datetime import date, timedelta
 from pipeline.gdelt_client import BACKFILL_CHUNK_DAYS
-from pipeline import geo_scope
+from pipeline import geo_scope, scoring
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -88,6 +88,7 @@ def main() -> int:
                           f"from {w_start} to {resume} to close the gap")
                     w_start = max(resume, COVERAGE_START)
 
+    core.seed_scoring_config(con)
     run_id = core.start_run(con, w_start, w_end)
     errors: list[str] = []
 
@@ -154,6 +155,18 @@ def build_site_data(con, incidents, countries, as_of, run_id):
     # field are available to the dashboard.
     scope_tally = geo_scope.annotate(incidents)
 
+    # Measurement, official designation, and their disagreement. Computed after
+    # the rollup so percentiles rank exactly the numbers the table displays.
+    cfg = con.execute("SELECT value_json AS v FROM danger_scoring_config WHERE key='category_weights'").fetchone()
+    weights = json.loads(cfg["v"]) if cfg else None
+    ovr = con.execute("SELECT value_json AS v FROM danger_scoring_config WHERE key='committee_overrides'").fetchone()
+    overrides = json.loads(ovr["v"]) if ovr else {}
+    designations = scoring.load_designations()
+    score_tally = scoring.apply(countries, weights, overrides, designations)
+    print(f"[score] {score_tally['designated']} designated \u00b7 "
+          f"{score_tally['measured_high_undesignated']} measured high, not designated \u00b7 "
+          f"{score_tally['designated_quiet']} designated but quiet")
+
     payload = {
         "meta": {
             "generated_at": core._now(),
@@ -166,10 +179,12 @@ def build_site_data(con, incidents, countries, as_of, run_id):
             "run_id": run_id,
             "total_incidents": len(incidents),
             "scope_tally": scope_tally,
+            "score_tally": score_tally,
+            "designation_sources": designations["sources"],
             "total_raw_events": con.execute("SELECT COUNT(*) c FROM raw_events").fetchone()["c"],
             "excluded_non_physical": excluded,
             "coverage_note": (
-                "GDELT Cloud coded event coverage begins 2026-03-01. Periods before that "
+                "Coded event coverage from the upstream source begins 2026-03-01. Periods before that "
                 "date have NO COVERAGE and are never reported as zero events."),
         },
         "categories": CATEGORIES,

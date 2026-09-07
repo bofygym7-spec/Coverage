@@ -8,6 +8,7 @@ every aggregate stays reproducible from stored records.
 from __future__ import annotations
 import json, sqlite3, math
 from datetime import date, timedelta
+import json
 from collections import defaultdict
 
 from pipeline import geo_scope
@@ -364,3 +365,26 @@ def city_proximity(incidents: list[dict], city_lat: float, city_lon: float,
         out.append({**i, "proximity_band": band,
                     "distance_km": round(dist, 1) if dist is not None else None})
     return out
+
+
+def seed_scoring_config(con) -> None:
+    """Put the tunable policy into the database on first run.
+
+    The spec required scoring to be configurable rather than hard-coded, so the
+    weights and the committee override map live here where they can be edited
+    without touching Python. Existing rows are never overwritten: a committee
+    change must survive the next deploy.
+    """
+    from pipeline import scoring
+    defaults = {
+        "category_weights": scoring.DEFAULT_WEIGHTS,
+        "committee_overrides": {},
+        "measurement_bands": {name: cut for cut, name in scoring.BANDS},
+        "fatality_weight": scoring.FATALITY_WEIGHT,
+    }
+    for k, v in defaults.items():
+        con.execute(
+            "INSERT INTO danger_scoring_config(key, value_json, updated_at) "
+            "VALUES(?,?,?) ON CONFLICT(key) DO NOTHING",
+            (k, json.dumps(v, ensure_ascii=False), _now()))
+    con.commit()
