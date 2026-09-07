@@ -268,10 +268,11 @@ select.enhanced{position:absolute;width:1px;height:1px;opacity:0;pointer-events:
 .srcbar a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
 .srcbar a:hover{border-bottom-color:currentColor}
 .srcbar .eff{color:var(--muted);font-variant-numeric:tabular-nums}
-.badge.desig{background:#e7eef7;color:#1f4b7d;border:1px solid #c3d5ea;font-weight:600}
-.badge.meas{background:transparent;color:var(--muted);border:1px solid var(--rule)}
-.badge.div{background:#fff4e0;color:#7a4a00;border:1px solid #f0d9ab}
-td.status{white-space:nowrap}
+.badge.desig{background:#eef3f9;color:#2a5583;border:0;font-weight:600}
+.badge.meas{background:#f4f6f8;color:#69737d;border:0;font-weight:500}
+.badge.div{background:#fdf3e3;color:#8a5a12;border:0;font-weight:500}
+td.dstat .badge{display:inline-block;margin:1px 0}
+td.dstat{white-space:nowrap;line-height:1.9}
 @media(max-width:860px){.srcbar{padding:8px 10px;font-size:11px}}
 html[dir=rtl]{--panel-hidden:-100%}
 html[dir=rtl] body{font-family:var(--ar);font-size:14.5px;line-height:1.7}
@@ -436,13 +437,13 @@ const DICT={
   srcIcsc:"لجنة الخدمة المدنية الدولية — بدل الخطر (الأمم المتحدة)",
   srcDssr:"وزارة الخارجية الأمريكية — DSSR 650",
   designationNote:"التصنيف الرسمي يصدر عن هاتين الجهتين؛ هذه اللوحة تقيس ولا تُصنِّف.",
-  designated:"مُصنَّف رسميًا",
-  band_MEASURED_TOP_DECILE:"الأعلى 10% قياسًا", band_MEASURED_UPPER_QUARTILE:"الربع الأعلى قياسًا",
-  band_MEASURED_UPPER_HALF:"النصف الأعلى قياسًا", band_MEASURED_LOWER_HALF:"النصف الأدنى قياسًا",
+  designated:"مُصنَّف",
+  band_MEASURED_TOP_DECILE:"الأعلى 10%", band_MEASURED_UPPER_QUARTILE:"الربع الأعلى",
+  band_MEASURED_UPPER_HALF:"النصف الأعلى", band_MEASURED_LOWER_HALF:"النصف الأدنى",
   band_NO_RECORDED_INCIDENTS:"لا حوادث مسجّلة", band_NOT_RANKED:"غير مُدرَج في الترتيب",
-  div_MEASURED_HIGH_NOT_DESIGNATED:"قياس مرتفع دون تصنيف",
+  div_MEASURED_HIGH_NOT_DESIGNATED:"دون تصنيف",
   div_MEASURED_HIGH_NOT_DESIGNATED_hint:"القياس يضع هذه الدولة ضمن الأعلى 10% بينما لا يوجد تصنيف رسمي لبدل الخطر. يستحق مراجعة اللجنة.",
-  div_DESIGNATED_BUT_QUIET:"مُصنَّف والقياس منخفض",
+  div_DESIGNATED_BUT_QUIET:"قياس منخفض",
   div_DESIGNATED_BUT_QUIET_hint:"توجد جهة رسمية تُصنِّف هذه الدولة، بينما القياس من الحوادث المخزّنة منخفض. قد تكون الظروف قد خفّت، أو قد تكون التغطية الإعلامية تراجعت. لا تُحسم من اللوحة وحدها.",
   scope:"النطاق", scopeCountries:"الدول فقط", scopeAll:"كل المُدخلات",
   scope_WATERS:"مياه/بحار", scope_REGION:"إقليم", scope_UNRESOLVED:"موقع غير محدد",
@@ -764,8 +765,10 @@ function statusCell(r){
     return `<span class="badge desig" title="${esc(r.danger_basis||"")}">${esc(r.committee_override)}</span>`;
   const bits=[];
   if(d.designated){
-    const rate=(d.dssr650&&d.dssr650.max_rate)?` ${d.dssr650.max_rate}%`:"";
-    bits.push(`<span class="badge desig" title="${esc(r.danger_basis||"")}">${T("designated")}${rate}</span>`);
+    // The rate belongs to a specific post, not to the country, so it sits in
+    // the tooltip rather than being read off the row as a country-wide figure.
+    const rate=(d.dssr650&&d.dssr650.max_rate)?` — ${d.dssr650.max_rate}%`:"";
+    bits.push(`<span class="badge desig" title="${esc((r.danger_basis||"")+rate)}">${T("designated")}</span>`);
   }else{
     bits.push(`<span class="badge meas" title="${esc(m.reason||r.danger_basis||"")}">${esc(T("band_"+m.band))}</span>`);
   }
@@ -890,7 +893,7 @@ function renderTable(){
     return `<tr>
       <td class="serial num">${_ix+1}</td>
       <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(CTRY(r.country))}</button></td>
-      <td class="l status">${statusCell(r)}</td>
+      <td class="l dstat">${statusCell(r)}</td>
       <td class="num">${r.d7_incidents}</td><td class="num">${r.d30_incidents}</td>
       <td class="num">${r.prev30_covered?r.prev30_incidents:`<span class="badge est" title="${T("noCovHint")}">${T("noCoverage")}</span>`}</td>
       <td class="num delta ${r.prev30_covered&&r.chg>0?"pos":r.prev30_covered&&r.chg<0?"neg":""}">${!r.prev30_covered?"&ndash;":r.chg===null?"&ndash;":(r.chg>0?"+":"")+Math.round(r.chg*100)+"%"}</td>
