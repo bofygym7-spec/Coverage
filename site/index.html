@@ -202,6 +202,14 @@ html[dir=rtl] .inc{border-inline-start-width:3px}
 /* Digits stay Western and read left-to-right inside Arabic text. */
 .num,.badge.fat,code,.dom{direction:ltr;unicode-bidi:isolate}
 html[dir=rtl] .trail{padding-inline-end:34px;padding-left:0}
+/* Row number. Sticky alongside the country so the count stays visible while the
+   category columns scroll. Numbers the filtered view, not the whole store. */
+td.serial,thead th.serial{position:sticky;inset-inline-start:0;width:40px;min-width:40px;
+  text-align:center;color:var(--muted);font-size:11px;background:var(--surface-2);
+  border-inline-end:1px solid var(--rule);z-index:2}
+thead th.serial{z-index:5;cursor:default}
+tbody tr:hover td.serial{background:#e8eef5}
+td.country,thead th.country{inset-inline-start:40px}
 .langsel{display:flex;align-items:stretch}
 .langsel button{padding:0 13px;color:#b6c0cb;font-size:12px;
   border-inline-start:1px solid #2c3540}
@@ -322,6 +330,7 @@ const DICT={
   trend:"الاتجاه", danger:"الخطر", all:"الكل", window:"النافذة",
   w7:"7 أيام", w30:"30 يومًا", w90:"90 يومًا", wall:"كامل المخزون",
   c7:"7 أيام", c30:"30 يومًا", c90:"90 يومًا",
+  storedFrom:"المخزّن من", gapHint:"المخزون يبدأ بعد بداية تغطية GDELT. الفترة الأسبق لم تُستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغّل التحديث مع خيار الاستيراد الكامل (backfill).",
   lw7:"آخر 7 أيام", lw30:"آخر 30 يومًا", lw90:"آخر 90 يومًا", lwall:"كامل السجل المخزّن",
   country:"الدولة", dangerStatus:"حالة الخطر", prev30:"الـ30 السابقة",
   chg30:"التغير خلال 30 يومًا", fat30:"وفيات 30 يومًا", fat90:"وفيات 90 يومًا",
@@ -389,6 +398,7 @@ const DICT={
   trend:"Trend", danger:"Danger", all:"All", window:"Window",
   w7:"7 days", w30:"30 days", w90:"90 days", wall:"Full store",
   c7:"7d", c30:"30d", c90:"90d",
+  storedFrom:"Stored from", gapHint:"The store begins after GDELT's coverage start. The earlier period has not been ingested; that is not the same as zero events. Run the workflow with backfill enabled.",
   lw7:"last 7 days", lw30:"last 30 days", lw90:"last 90 days", lwall:"full stored history",
   country:"Country", dangerStatus:"Danger status", prev30:"Prev 30d",
   chg30:"30d change", fat30:"30d fatal.", fat90:"90d fatal.",
@@ -506,8 +516,9 @@ const AR_COUNTRY={
 "Brunei":"بروناي","Bulgaria":"بلغاريا","Burkina Faso":"بوركينا فاسو","Burundi":"بوروندي","Cambodia":"كمبوديا",
 "Cameroon":"الكاميرون","Canada":"كندا","Cape Verde":"الرأس الأخضر","Central African Republic":"جمهورية أفريقيا الوسطى",
 "Chad":"تشاد","Chile":"تشيلي","China":"الصين","Colombia":"كولومبيا","Comoros":"جزر القمر",
-"Democratic Republic of the Congo":"جمهورية الكونغو الديمقراطية","Republic of the Congo":"جمهورية الكونغو",
-"Congo":"الكونغو","Costa Rica":"كوستاريكا","Croatia":"كرواتيا","Cuba":"كوبا","Cyprus":"قبرص",
+"DR Congo":"جمهورية الكونغو الديمقراطية","Democratic Republic of the Congo":"جمهورية الكونغو الديمقراطية",
+"Republic of Congo":"جمهورية الكونغو","Republic of the Congo":"جمهورية الكونغو","Congo":"الكونغو",
+"Congo-Brazzaville":"جمهورية الكونغو","Congo-Kinshasa":"جمهورية الكونغو الديمقراطية","Costa Rica":"كوستاريكا","Croatia":"كرواتيا","Cuba":"كوبا","Cyprus":"قبرص",
 "Czech Republic":"التشيك","Czechia":"التشيك","Denmark":"الدنمارك","Djibouti":"جيبوتي","Dominica":"دومينيكا",
 "Dominican Republic":"جمهورية الدومينيكان","Ecuador":"الإكوادور","Egypt":"مصر","El Salvador":"السلفادور",
 "Equatorial Guinea":"غينيا الاستوائية","Eritrea":"إريتريا","Estonia":"إستونيا","Eswatini":"إسواتيني",
@@ -605,11 +616,15 @@ const sevClass=n=>n===0?"zero":n<3?"sev1":n<8?"sev2":n<20?"sev3":"sev4";
 /* ---------- status strip ---------- */
 function renderStatus(){
   const m=D.meta, stale=m.latest_event_date && m.latest_event_date < bounds("d7")[0];
+  // A store starting later than GDELT coverage means history was never fetched.
+  // Flagging it is the difference between "quiet" and "not looked".
+  const gap = m.store_earliest_event && m.store_earliest_event > m.coverage_start;
   $("#status").innerHTML=`
     <div class="brand">${T("brand")} <span>GDELT Cloud</span></div>
     <div class="stat"><i>${T("lastRefresh")}</i><b>${esc((m.last_refresh||"").replace("T"," ").replace("+00:00"," UTC"))}</b></div>
     <div class="stat ${stale?"warn":""}"><i>${T("latestEventDate")}</i><b>${esc(m.latest_event_date||T("none"))}</b></div>
     <div class="stat"><i>${T("coverageStart")}</i><b>${esc(m.coverage_start)}</b></div>
+    <div class="stat ${gap?"warn":""}" title="${esc(gap?T("gapHint"):"")}"><i>${T("storedFrom")}</i><b>${esc(m.store_earliest_event||"–")}${gap?" ⚠":""}</b></div>
     <div class="stat"><i>${T("incidentsStored")}</i><b class="num">${m.total_incidents.toLocaleString()}</b></div>
     <div class="stat"><i>${T("rawEvents")}</i><b class="num">${m.total_raw_events.toLocaleString()}</b></div>
     <div class="spacer"></div>
@@ -666,20 +681,21 @@ function renderTable(){
   });
 
   $("#tbl thead").innerHTML=`<tr>
-    <th class="l country" colspan="2" style="text-align:start">${T("basis")}: ${esc(label(WIN))}</th>
+    <th class="serial"></th><th class="l country" colspan="2" style="text-align:start">${T("basis")}: ${esc(label(WIN))}</th>
     <th class="group" colspan="7">${T("rolling")}</th>
     <th class="group" colspan="${COLS.length}">${T("secCats")} (${esc(label(WIN))})</th>
     <th class="group" colspan="3">${T("currency")}</th></tr><tr>`+
-    HEAD().map(h=>`<th class="${h.l?"l ":""}${h.cls||""}" data-k="${h.k}"
+    `<th class="serial">#</th>`+HEAD().map(h=>`<th class="${h.l?"l ":""}${h.cls||""}" data-k="${h.k}"
       ${SORT.key===h.k?`aria-sort="${SORT.dir<0?"descending":"ascending"}"`:""}>${h.t}</th>`).join("")+
     COLS.map(c=>`<th data-k="cat:${c}" ${SORT.key==="cat:"+c?`aria-sort="${SORT.dir<0?"descending":"ascending"}"`:""}>${esc(SHORT[LANG][c])}</th>`).join("")+
     `<th class="l">${T("trend")}</th><th class="l">${T("lastSig")}</th>
      <th class="l">${T("latestEvent")}</th></tr>`;
 
-  $("#tbl tbody").innerHTML = rows.length? rows.map(r=>{
+  $("#tbl tbody").innerHTML = rows.length? rows.map((r,_ix)=>{
     const counts=Object.fromEntries(COLS.map(c=>[c,select({country:r.country,category:c}).length]));
     const ls=r.last_significant;
     return `<tr>
+      <td class="serial num">${_ix+1}</td>
       <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(CTRY(r.country))}</button></td>
       <td class="l"><span class="status-tag">${esc(r.danger_status)}</span></td>
       <td class="num">${r.d7_incidents}</td><td class="num">${r.d30_incidents}</td>
@@ -694,7 +710,7 @@ function renderTable(){
        <td class="l">${ls?`<button class="linkbtn" data-inc="${esc(ls.incident_id)}">${esc((ls.title||"").slice(0,58))}</button>
           <span class="badge">${esc(ls.date)}</span>`:'<span style="color:#b9c1c9">${T("noneInWindow")}</span>'}</td>
        <td class="l">${esc(r.latest_event_date||"&ndash;")}</td></tr>`;
-  }).join("") : `<tr><td colspan="24" class="empty">${T("noCountries")}</td></tr>`;
+  }).join("") : `<tr><td colspan="25" class="empty">${T("noCountries")}</td></tr>`;
 
   $("#rowcount").textContent=`${rows.length} ${T("countriesWord")} \u00b7 ${D.meta.total_incidents} ${T("incidentsWord")}`;
   wire();
