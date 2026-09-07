@@ -9,6 +9,8 @@ from __future__ import annotations
 import json, sqlite3, math
 from datetime import date, timedelta
 from collections import defaultdict
+
+from pipeline import geo_scope
 from typing import Any, Iterable
 
 DDL = """
@@ -224,14 +226,21 @@ def country_rollup(incidents: list[dict], as_of: date, categories: list[str],
     """store_earliest is the oldest event date actually ingested. It is what lets
     the rollup tell 'nothing happened' apart from 'we have not fetched that yet'."""
     w = windows(as_of)
+    # Group on the canonical name so an ISO code and its spelled-out name, or
+    # two casings of the same water body, become one row instead of two.
     by_country: dict[str, list[dict]] = defaultdict(list)
+    scope_of: dict[str, str] = {}
     for i in incidents:
-        if i["country"]:
-            by_country[i["country"]].append(i)
+        disp, scope = geo_scope.canonical(i.get("country"))
+        i["country_display"] = disp
+        i["geo_scope"] = scope
+        by_country[disp].append(i)
+        scope_of[disp] = scope
 
     out = []
     for country, items in by_country.items():
-        row: dict[str, Any] = {"country": country}
+        row: dict[str, Any] = {"country": country, "geo_scope": scope_of[country],
+                               "raw_names": sorted({i["country"] for i in items if i.get("country")})}
         for wk, (lo, hi) in w.items():
             sel = [i for i in items if _in(i["event_date"], lo, hi)]
             row[f"{wk}_incidents"] = len(sel)

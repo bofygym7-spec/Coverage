@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse, json, os, sys, traceback
 from datetime import date, timedelta
 from pipeline.gdelt_client import BACKFILL_CHUNK_DAYS
+from pipeline import geo_scope
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -64,12 +65,29 @@ def main() -> int:
     args = ap.parse_args()
 
     as_of = date.fromisoformat(args.as_of) if args.as_of else date.today()
+
+    con = core.connect(DB_PATH)
+
     if args.backfill:
         w_start, w_end = COVERAGE_START, as_of
     else:
         w_start, w_end = as_of - timedelta(days=args.days - 1), as_of
+        # The store lives in a best-effort cache and scheduled runs can be missed,
+        # so continuity is verified rather than assumed. Whatever is genuinely
+        # absent gets fetched, which makes an evicted cache self-healing instead
+        # of silently truncating history to the last few days.
+        if not args.seed:
+            latest = con.execute("SELECT MAX(event_date) m FROM raw_events").fetchone()["m"]
+            if latest is None:
+                w_start = COVERAGE_START
+                print("[gap] store is empty; widening this run to a full backfill")
+            else:
+                resume = date.fromisoformat(latest) - timedelta(days=1)
+                if resume < w_start:
+                    print(f"[gap] latest stored event is {latest}; widening window "
+                          f"from {w_start} to {resume} to close the gap")
+                    w_start = max(resume, COVERAGE_START)
 
-    con = core.connect(DB_PATH)
     run_id = core.start_run(con, w_start, w_end)
     errors: list[str] = []
 
@@ -80,7 +98,8 @@ def main() -> int:
             fetched = len(raw)
             print(f"[ingest] {fetched} fetched, {ins} new, {upd} updated")
         else:
-            chunk = BACKFILL_CHUNK_DAYS if args.backfill else 30
+            span = (w_end - w_start).days + 1
+            chunk = BACKFILL_CHUNK_DAYS if span > 30 else 30
             fetched, ins, upd = fetch_live(con, run_id, w_start, w_end, chunk)
 
         # Classify every stored event, not only this run's, so a rules change is
@@ -130,6 +149,11 @@ def build_site_data(con, incidents, countries, as_of, run_id):
     excluded = con.execute(
         "SELECT COUNT(*) c FROM security_classifications WHERE counts_as_danger=0").fetchone()["c"]
 
+    # Label every incident with what its country value actually refers to. Done
+    # before the payload is assembled so both the tally and the per-incident
+    # field are available to the dashboard.
+    scope_tally = geo_scope.annotate(incidents)
+
     payload = {
         "meta": {
             "generated_at": core._now(),
@@ -141,6 +165,7 @@ def build_site_data(con, incidents, countries, as_of, run_id):
             "rules_version": RULES["version"],
             "run_id": run_id,
             "total_incidents": len(incidents),
+            "scope_tally": scope_tally,
             "total_raw_events": con.execute("SELECT COUNT(*) c FROM raw_events").fetchone()["c"],
             "excluded_non_physical": excluded,
             "coverage_note": (
