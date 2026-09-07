@@ -25,7 +25,8 @@ SITE_DATA = os.path.join(ROOT, "site", "data.json")
 COVERAGE_START = date(2026, 3, 1)
 
 
-def fetch_live(con, run_id: int, start: date, end: date, chunk_days: int) -> int:
+def fetch_live(con, run_id: int, start: date, end: date,
+               chunk_days: int) -> tuple[int, int, int]:
     """Fetch and persist chunk by chunk.
 
     Each chunk is committed as it arrives rather than buffered to the end, so a
@@ -46,7 +47,7 @@ def fetch_live(con, run_id: int, start: date, end: date, chunk_days: int) -> int
         print(f"  {w_start}..{w_end}: {len(rows):5d} events ({ins} new, {upd} updated)",
               flush=True)
     print(f"[ingest] {total} fetched, {ins_t} new, {upd_t} updated")
-    return total
+    return total, ins_t, upd_t
 
 
 def load_seed() -> list[dict]:
@@ -76,10 +77,11 @@ def main() -> int:
         if args.seed:
             raw = load_seed()
             ins, upd = core.upsert_events(con, raw, run_id)
-            print(f"[ingest] {len(raw)} fetched, {ins} new, {upd} updated")
+            fetched = len(raw)
+            print(f"[ingest] {fetched} fetched, {ins} new, {upd} updated")
         else:
             chunk = BACKFILL_CHUNK_DAYS if args.backfill else 30
-            fetch_live(con, run_id, w_start, w_end, chunk)
+            fetched, ins, upd = fetch_live(con, run_id, w_start, w_end, chunk)
 
         # Classify every stored event, not only this run's, so a rules change is
         # applied retroactively and old decisions can be revised.
@@ -108,7 +110,7 @@ def main() -> int:
         print(f"[metrics] {len(countries)} countries rolled up")
 
         build_site_data(con, incidents, countries, as_of, run_id)
-        core.finish_run(con, run_id, events_fetched=len(raw), events_inserted=ins,
+        core.finish_run(con, run_id, events_fetched=fetched, events_inserted=ins,
                         events_updated=upd, incidents_built=len(incidents),
                         errors_json=json.dumps(errors), notes="seed" if args.seed else "live")
         print(f"[done] wrote {SITE_DATA}")
