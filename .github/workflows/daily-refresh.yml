@@ -1,0 +1,67 @@
+name: Daily security refresh
+
+on:
+  schedule:
+    - cron: "20 5 * * *"        # 05:20 UTC daily
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Full backfill from 2026-03-01 instead of the daily increment"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: security-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Restore the accumulated database so history is preserved across runs.
+      - name: Restore database
+        uses: actions/cache@v4
+        with:
+          path: data/security.db
+          key: security-db-${{ github.run_id }}
+          restore-keys: security-db-
+
+      - name: Refresh
+        env:
+          GDELT_API_KEY: ${{ secrets.GDELT_API_KEY }}
+        run: |
+          if [ "${{ inputs.backfill }}" = "true" ]; then
+            python -m pipeline.run_pipeline --backfill
+          else
+            python -m pipeline.run_pipeline --days 4
+          fi
+          python pipeline/build_site.py site/dashboard.html
+
+      - name: Publish
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: refresh
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
