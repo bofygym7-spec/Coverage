@@ -22,8 +22,10 @@ log = logging.getLogger("gdelt")
 
 BASE = os.environ.get("GDELT_API_BASE", "https://gdeltcloud.com/api/v2")
 COVERAGE_START = date(2026, 3, 1)      # events; stories begin 2026-03-08
-MAX_WINDOW_DAYS = 30
+MAX_WINDOW_DAYS = 30          # hard API cap on a single query window
+BACKFILL_CHUNK_DAYS = 7       # deliberately below the cap: see search_events
 PAGE_LIMIT = 100
+MAX_WALK_RESTARTS = 4
 
 DANGER_CATEGORIES = [
     "Battles",
@@ -96,14 +98,22 @@ class GdeltClient:
 
     # -- windows ------------------------------------------------------------
     @staticmethod
-    def split_window(start: date, end: date) -> list[tuple[date, date]]:
-        """Break any range into consecutive <=30-day chunks, clipped to coverage."""
+    def split_window(start: date, end: date,
+                     chunk_days: int = MAX_WINDOW_DAYS) -> list[tuple[date, date]]:
+        """Break any range into consecutive chunks, clipped to coverage.
+
+        chunk_days defaults to the API cap but callers doing long backfills pass
+        something smaller. A short window means few pages per cursor walk, so the
+        walk is likely to finish before GDELT next rebuilds its snapshot, and a
+        restart costs little when it does not.
+        """
+        chunk_days = max(1, min(chunk_days, MAX_WINDOW_DAYS))
         start = max(start, COVERAGE_START)
         if end < start:
             return []
         out, cur = [], start
         while cur <= end:
-            stop = min(cur + timedelta(days=MAX_WINDOW_DAYS - 1), end)
+            stop = min(cur + timedelta(days=chunk_days - 1), end)
             out.append((cur, stop))
             cur = stop + timedelta(days=1)
         return out
@@ -117,28 +127,51 @@ class GdeltClient:
         return None
 
     # -- events -------------------------------------------------------------
-    def search_events(self, start: date, end: date, **filters) -> Iterator[dict]:
-        """Yield every event in [start, end], splitting windows and paging cursors."""
-        for w_start, w_end in self.split_window(start, end):
-            cursor = None
-            while True:
-                params = {
-                    "start_date": w_start.isoformat(),
-                    "end_date": w_end.isoformat(),
-                    "limit": PAGE_LIMIT,
-                    "sort": "recent",
-                    **{k: v for k, v in filters.items() if v is not None},
-                }
-                if isinstance(params.get("category"), (list, tuple)):
-                    params["category"] = ",".join(params["category"])
-                if cursor:
-                    params["cursor"] = cursor
-                payload = self._get("/events", params)
-                for row in payload.get("data", []):
-                    yield row
-                cursor = (payload.get("pagination") or {}).get("next_cursor")
-                if not cursor:
-                    break
+    def search_events(self, start: date, end: date, chunk_days: int = MAX_WINDOW_DAYS,
+                      **filters) -> Iterator[dict]:
+        """Yield every event in [start, end], splitting windows and paging cursors.
+
+        GDELT periodically rebuilds the snapshot a cursor was issued against and
+        returns CURSOR_STALE. The cursor cannot be resumed: the only consistent
+        response is to walk that window again from the first page. Backfills run
+        long enough to cross a rebuild routinely, so this is expected operation
+        rather than an error.
+
+        Restarting re-yields events already seen. That is safe because ingest
+        upserts on gdelt_event_id, so a repeated event updates in place and
+        first_seen_at is preserved.
+        """
+        for w_start, w_end in self.split_window(start, end, chunk_days):
+            for attempt in range(MAX_WALK_RESTARTS + 1):
+                cursor, yielded = None, 0
+                try:
+                    while True:
+                        params = {
+                            "start_date": w_start.isoformat(),
+                            "end_date": w_end.isoformat(),
+                            "limit": PAGE_LIMIT,
+                            "sort": "recent",
+                            **{k: v for k, v in filters.items() if v is not None},
+                        }
+                        if isinstance(params.get("category"), (list, tuple)):
+                            params["category"] = ",".join(params["category"])
+                        if cursor:
+                            params["cursor"] = cursor
+                        payload = self._get("/events", params)
+                        for row in payload.get("data", []):
+                            yielded += 1
+                            yield row
+                        cursor = (payload.get("pagination") or {}).get("next_cursor")
+                        if not cursor:
+                            break
+                    break                      # window walked cleanly
+                except GdeltError as e:
+                    if e.code != "CURSOR_STALE" or attempt == MAX_WALK_RESTARTS:
+                        raise
+                    log.warning("snapshot rebuilt %s..%s after %d events; "
+                                "restarting walk (attempt %d/%d)",
+                                w_start, w_end, yielded, attempt + 1, MAX_WALK_RESTARTS)
+                    time.sleep(2)
 
     def summarize_events(self, start: date, end: date, group_by: str = "country", **filters) -> list[dict]:
         out: list[dict] = []

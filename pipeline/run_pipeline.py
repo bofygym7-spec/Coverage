@@ -11,6 +11,7 @@ in memory, and never written to the database or the emitted site data.
 from __future__ import annotations
 import argparse, json, os, sys, traceback
 from datetime import date, timedelta
+from pipeline.gdelt_client import BACKFILL_CHUNK_DAYS
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -24,13 +25,28 @@ SITE_DATA = os.path.join(ROOT, "site", "data.json")
 COVERAGE_START = date(2026, 3, 1)
 
 
-def fetch_live(start: date, end: date) -> list[dict]:
+def fetch_live(con, run_id: int, start: date, end: date, chunk_days: int) -> int:
+    """Fetch and persist chunk by chunk.
+
+    Each chunk is committed as it arrives rather than buffered to the end, so a
+    failure late in a long backfill keeps everything already retrieved. Re-running
+    resumes cheaply because upserts are keyed on the GDELT event id.
+    """
     from pipeline.gdelt_client import GdeltClient, DANGER_CATEGORIES
     client = GdeltClient()
-    rows = list(client.search_events(start, end, category=DANGER_CATEGORIES,
-                                     include_images=False, include_entity_images=False))
-    print(f"  fetched {len(rows)} events {start}..{end}")
-    return rows
+    total = ins_t = upd_t = 0
+    for w_start, w_end in GdeltClient.split_window(start, end, chunk_days):
+        rows = list(client.search_events(w_start, w_end, chunk_days=chunk_days,
+                                         category=DANGER_CATEGORIES,
+                                         include_images=False,
+                                         include_entity_images=False))
+        ins, upd = core.upsert_events(con, rows, run_id)
+        con.commit()
+        total, ins_t, upd_t = total + len(rows), ins_t + ins, upd_t + upd
+        print(f"  {w_start}..{w_end}: {len(rows):5d} events ({ins} new, {upd} updated)",
+              flush=True)
+    print(f"[ingest] {total} fetched, {ins_t} new, {upd_t} updated")
+    return total
 
 
 def load_seed() -> list[dict]:
@@ -57,9 +73,13 @@ def main() -> int:
     errors: list[str] = []
 
     try:
-        raw = load_seed() if args.seed else fetch_live(w_start, w_end)
-        ins, upd = core.upsert_events(con, raw, run_id)
-        print(f"[ingest] {len(raw)} fetched, {ins} new, {upd} updated")
+        if args.seed:
+            raw = load_seed()
+            ins, upd = core.upsert_events(con, raw, run_id)
+            print(f"[ingest] {len(raw)} fetched, {ins} new, {upd} updated")
+        else:
+            chunk = BACKFILL_CHUNK_DAYS if args.backfill else 30
+            fetch_live(con, run_id, w_start, w_end, chunk)
 
         # Classify every stored event, not only this run's, so a rules change is
         # applied retroactively and old decisions can be revised.
