@@ -1,0 +1,64 @@
+{
+  "_note": "Official danger-pay designations used as the authority anchor. The dashboard MEASURES from GDELT but does not decide what counts as danger; these bodies do. Update this file when the sources change and set retrieved_at accordingly.",
+
+  "sources": {
+    "dssr650": {
+      "authority": "U.S. Department of State, Office of Allowances",
+      "instrument": "DSSR 650 Danger Pay Allowance",
+      "list_url": "https://aoprals.state.gov/Web920/danger_pay_all.asp",
+      "regulation_url": "https://aoprals.state.gov/content.asp?content_id=271&menu_id=75",
+      "rates_effective": "2026-09-06",
+      "retrieved_at": "2026-09-08",
+      "update_cadence": "irregular; reissued when the Secretary of State redesignates a post",
+      "redistribution": "US Government work, public domain. Snapshot below is safe to store.",
+      "coverage_note": "Designations are per POST, not per country. Rolled up here to the highest rate at any post in the country. A country designation does not mean every location in it is designated, and 'Other' rows cover posts not listed individually."
+    },
+    "icsc": {
+      "authority": "UN International Civil Service Commission (on UNDSS recommendation)",
+      "instrument": "ICSC Danger Pay duty stations",
+      "list_url": "https://icsc.un.org/Home/DataDangerPay",
+      "policy_url": "https://icsc.un.org/Home/DangerPay",
+      "xml_url": "https://icsc.un.org/Resources/HRPD/DangerPay/DangerPay.xml",
+      "xls_url": "https://icsc.un.org/Resources/HRPD/DangerPay/dangerpay.xls",
+      "current_period": "1 July to 30 September 2026",
+      "update_cadence": "quarterly; approved for up to three months at a time and lifted when conditions abate",
+      "redistribution": "NOT BUNDLED. The ICSC terms of use grant access for personal, non-commercial use with no right to redistribute or to create derivative works. This dashboard is published on a public site, so the list is linked rather than copied. Populate `designations` below manually if your legal advisers agree, or keep the repository private.",
+      "designations": {}
+    }
+  },
+
+  "dssr650_designations": {
+    "Afghanistan": {"max_rate": 35, "effective": "2006-03-05"},
+    "Algeria": {"max_rate": null, "effective": "2022-05-08", "note": "rate published in footnote"},
+    "Bahrain": {"max_rate": null, "effective": "2026-09-06", "note": "rate published in footnote"},
+    "Burkina Faso": {"max_rate": null, "effective": "2020-06-07", "note": "rate published in footnote"},
+    "Myanmar": {"max_rate": 25, "effective": "2021-09-12", "source_name": "BURMA"},
+    "Cameroon": {"max_rate": null, "effective": "2017-04-16", "note": "rate published in footnote"},
+    "Central African Republic": {"max_rate": 35, "effective": "2015-09-06"},
+    "Chad": {"max_rate": null, "effective": "2017-04-02", "note": "rate published in footnote"},
+    "Colombia": {"max_rate": null, "effective": "2017-04-16", "note": "rate published in footnote"},
+    "North Korea": {"max_rate": 35, "effective": "2018-08-05", "source_name": "DEM. PEOPLE'S REPUBLIC OF KOREA"},
+    "DR Congo": {"max_rate": 25, "effective": "2025-04-20", "source_name": "DEMOCRATIC REPUBLIC OF THE CONGO"},
+    "Egypt": {"max_rate": null, "effective": "2017-04-02", "note": "rate published in footnote"},
+    "Haiti": {"max_rate": 35, "effective": "2023-10-22"},
+    "Iraq": {"max_rate": 35, "effective": "2006-03-05"},
+    "Israel": {"max_rate": 15, "effective": "2023-10-22"},
+    "Kenya": {"max_rate": null, "effective": "2017-04-02", "note": "rate published in footnote"},
+    "Kuwait": {"max_rate": 25, "effective": "2026-09-06"},
+    "Lebanon": {"max_rate": 25, "effective": "2026-09-06"},
+    "Libya": {"max_rate": 35, "effective": "2015-09-06"},
+    "Mali": {"max_rate": 25, "effective": "2017-01-22"},
+    "Niger": {"max_rate": null, "effective": "2026-04-19", "note": "rate published in footnote"},
+    "Nigeria": {"max_rate": null, "effective": "2017-04-16", "note": "rate published in footnote"},
+    "Pakistan": {"max_rate": 35, "effective": "2006-03-19"},
+    "Peru": {"max_rate": null, "effective": "2017-04-16", "note": "rate published in footnote"},
+    "Philippines": {"max_rate": null, "effective": "2016-11-27", "note": "Davao City only"},
+    "Somalia": {"max_rate": 35, "effective": "2015-09-06"},
+    "South Sudan": {"max_rate": 35, "effective": "2015-09-06"},
+    "Sudan": {"max_rate": 35, "effective": "2023-05-07"},
+    "Syria": {"max_rate": 35, "effective": "2015-09-06"},
+    "Ukraine": {"max_rate": 35, "effective": "2022-04-24"},
+    "Venezuela": {"max_rate": 35, "effective": "2026-01-11"},
+    "Yemen": {"max_rate": 35, "effective": "2014-11-30"}
+  }
+}
