@@ -424,87 +424,87 @@ const COLS = ["ARMED_CONFLICT","AIR_MISSILE_DRONE","TERRORISM_IED","VIOLENCE_AGA
 let LANG = localStorage.getItem("gsd_lang") || "ar";
 const DICT={
  ar:{
-  brand:"لوحة الأمن والخطر", lastRefresh:"آخر تحديث",
+  brand:"الأخبار الأمنية والخطرة", lastRefresh:"آخر تحديث",
   latestEventDate:"تاريخ أحدث حدث", coverageStart:"بداية تغطية البيانات",
-  incidentsStored:"الحوادث المخزّنة", rawEvents:"السجلات الأولية",
+  incidentsStored:"الحوادث المخزنة", rawEvents:"السجلات الأولية",
   vGlobal:"عالمي", vCountry:"الدولة", vMap:"الخريطة",
   search:"ابحث في الدول أو نص الحوادث", region:"المنطقة", category:"التصنيف",
   trend:"الاتجاه", danger:"الخطر", all:"الكل", window:"النافذة",
-  w7:"7 أيام", w30:"30 يومًا", w90:"90 يومًا", wall:"كامل المخزون",
-  c7:"7 أيام", c30:"30 يومًا", c90:"90 يومًا",
-  mapOffline:"تعذّر تحميل مكتبة الخرائط. تحقّق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. باقي اللوحة يعمل دون الخريطة.",
-  officialSources:"المصادر الرسمية", effective:"سارٍ من",
+  w7:"7 أيام", w30:"30 يوما", w90:"90 يوما", wall:"كامل المخزون",
+  c7:"7 أيام", c30:"30 يوما", c90:"90 يوما",
+  mapOffline:"تعذر تحميل مكتبة الخرائط. تحقق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. باقي اللوحة يعمل دون الخريطة.",
+  officialSources:"المصادر الرسمية", effective:"سار من",
   srcIcsc:"لجنة الخدمة المدنية الدولية — بدل الخطر (الأمم المتحدة)",
   srcDssr:"وزارة الخارجية الأمريكية — DSSR 650",
-  designationNote:"التصنيف الرسمي يصدر عن هاتين الجهتين؛ هذه اللوحة تقيس ولا تُصنِّف.",
-  designated:"مُصنَّف",
+  designationNote:"التصنيف الرسمي يصدر عن هاتين الجهتين؛ هذه اللوحة تقيس ولا تصنف.",
+  designated:"مصنف",
   band_MEASURED_TOP_DECILE:"الأعلى 10%", band_MEASURED_UPPER_QUARTILE:"الربع الأعلى",
   band_MEASURED_UPPER_HALF:"النصف الأعلى", band_MEASURED_LOWER_HALF:"النصف الأدنى",
-  band_NO_RECORDED_INCIDENTS:"لا حوادث مسجّلة", band_NOT_RANKED:"غير مُدرَج في الترتيب",
+  band_NO_RECORDED_INCIDENTS:"لا حوادث مسجلة", band_NOT_RANKED:"غير مدرج في الترتيب",
   div_MEASURED_HIGH_NOT_DESIGNATED:"دون تصنيف",
   div_MEASURED_HIGH_NOT_DESIGNATED_hint:"القياس يضع هذه الدولة ضمن الأعلى 10% بينما لا يوجد تصنيف رسمي لبدل الخطر. يستحق مراجعة اللجنة.",
   div_DESIGNATED_BUT_QUIET:"قياس منخفض",
-  div_DESIGNATED_BUT_QUIET_hint:"توجد جهة رسمية تُصنِّف هذه الدولة، بينما القياس من الحوادث المخزّنة منخفض. قد تكون الظروف قد خفّت، أو قد تكون التغطية الإعلامية تراجعت. لا تُحسم من اللوحة وحدها.",
-  scope:"النطاق", scopeCountries:"الدول فقط", scopeAll:"كل المُدخلات",
+  div_DESIGNATED_BUT_QUIET_hint:"توجد جهة رسمية تصنف هذه الدولة، بينما القياس من الحوادث المخزنة منخفض. قد تكون الظروف قد خفت، أو قد تكون التغطية الإعلامية تراجعت. لا تحسم من اللوحة وحدها.",
+  scope:"النطاق", scopeCountries:"الدول فقط", scopeAll:"كل المدخلات",
   scope_WATERS:"مياه/بحار", scope_REGION:"إقليم", scope_UNRESOLVED:"موقع غير محدد",
-  storedFrom:"المخزّن من", gapHint:"المخزون يبدأ بعد بداية تغطية المصدر. الفترة الأسبق لم تُستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغّل التحديث مع خيار الاستيراد الكامل (backfill).",
-  lw7:"آخر 7 أيام", lw30:"آخر 30 يومًا", lw90:"آخر 90 يومًا", lwall:"كامل السجل المخزّن",
-  country:"الدولة", dangerStatus:"حالة الخطر", prev30:"الـ30 السابقة",
-  chg30:"التغير خلال 30 يومًا", fat30:"وفيات 30 يومًا", fat90:"وفيات 90 يومًا",
-  prev30full:"الـ30 يومًا السابقة", fat30full:"وفيات 30 يومًا", fat90full:"وفيات 90 يومًا",
+  storedFrom:"المخزن من", gapHint:"المخزون يبدأ بعد بداية تغطية المصدر. الفترة الأسبق لم تستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغل التحديث مع خيار الاستيراد الكامل (backfill).",
+  lw7:"آخر 7 أيام", lw30:"آخر 30 يوما", lw90:"آخر 90 يوما", lwall:"كامل السجل المخزن",
+  country:"الدولة", dangerStatus:"حالة الخطر", prev30:"ال30 السابقة",
+  chg30:"التغير خلال 30 يوما", fat30:"وفيات 30 يوما", fat90:"وفيات 90 يوما",
+  prev30full:"ال30 يوما السابقة", fat30full:"وفيات 30 يوما", fat90full:"وفيات 90 يوما",
   basis:"أساس التقرير", rolling:"النوافذ الزمنية المتحركة",
-  secCats:"التصنيفات الأمنية — الأعداد قابلة للنقر وتفتح الحوادث التي تقف خلفها",
+  secCats:"التصنيفات الأمنية",
   currency:"حداثة البيانات", lastSig:"آخر حادث جوهري", latestEvent:"أحدث حدث",
   noCoverage:"لا توجد تغطية",
-  noCovHint:"هذه الفترة لم تُستورد بعد. هذا لا يعني عدم وقوع أحداث.",
+  noCovHint:"هذه الفترة لم تستورد بعد. هذا لا يعني عدم وقوع أحداث.",
   openCount:"فتح الحوادث المحتسبة هنا (%)", noneInWindow:"لا يوجد ضمن النافذة",
   noCountries:"لا توجد دول مطابقة لهذه المرشحات.",
   countriesWord:"دولة", incidentsWord:"حادث في المخزون", incidentsWord2:"حادث",
-  tr_esc:"تصعيد كبير", tr_det:"تدهور", tr_sta:"مستقر", tr_imp:"تحسّن",
-  tr_nc:"سجل غير كافٍ", tr_na:"لا نشاط",
+  tr_esc:"تصعيد كبير", tr_det:"تدهور", tr_sta:"مستقر", tr_imp:"تحسن",
+  tr_nc:"سجل غير كاف", tr_na:"لا نشاط",
   world:"العالم", incident:"حادث", gdeltEvent:"السجل المصدري", sourceArticle:"المقال المصدر",
-  auditCat:(n,cat,a,b,w,c)=>`هذه هي الحوادث الـ<b>${n}</b> ذاتها التي ينتج عنها الرقم الظاهر في الجدول.
+  auditCat:(n,cat,a,b,w,c)=>`هذه هي الحوادث ال<b>${n}</b> ذاتها التي ينتج عنها الرقم الظاهر في الجدول.
     الأساس: التصنيف الأمني <b>${cat}</b>، وتاريخ الحدث بين <b>${a}</b> و<b>${b}</b> (${w})، والدولة <b>${c}</b>.
-    تغيير النافذة الزمنية في شريط الأدوات يغيّر العدد وهذه القائمة معًا.`,
-  auditInc:(id,n)=>`الحادث <b>${id}</b> يوحّد <b>${n}</b> من السجلات المصدرية.
-    كل رقم أدناه مخزَّن، ولم يُشتق لحظة العرض.`,
-  auditProx:(n,city,w)=>`<b>${n}</b> حادث، مقيسة من ${city} باستخدام الإحداثيات المخزّنة لكل حادث. الأساس: ${w}.`,
+    تغيير النافذة الزمنية في شريط الأدوات يغير العدد وهذه القائمة معا.`,
+  auditInc:(id,n)=>`الحادث <b>${id}</b> يوحد <b>${n}</b> من السجلات المصدرية.
+    كل رقم أدناه مخزن، ولم يشتق لحظة العرض.`,
+  auditProx:(n,city,w)=>`<b>${n}</b> حادث، مقيسة من ${city} باستخدام الإحداثيات المخزنة لكل حادث. الأساس: ${w}.`,
   noneCell:"لا توجد حوادث في هذه الخانة ضمن النافذة المحددة.",
   untitled:"حادث بلا عنوان", killed:"قتيل", disputedShort:"(متنازع عليه)",
-  mergedN:"دُمج % من السجلات المصدرية", intercepted:"اعتُرض / بلا أثر",
+  mergedN:"دمج % من السجلات المصدرية", intercepted:"اعترض / بلا أثر",
   geoUnres:"الموقع الجغرافي غير محدد",
   date:"التاريخ", adminRegion:"المنطقة الإدارية", place:"الموقع", coords:"الإحداثيات",
   secCat:"التصنيف الأمني", secSub:"النوع الفرعي", overlays:"مؤشرات إضافية",
   nativeCat:"التصنيف المصدري الأصلي", catDispute:"تعارض في التصنيف",
-  codedDiff:"السجلات المدمجة رُمّزت بشكل مختلف", actors:"الأطراف", orgs:"المنظمات",
+  codedDiff:"السجلات المدمجة رمزت بشكل مختلف", actors:"الأطراف", orgs:"المنظمات",
   fatalities:"الوفيات المبلغ عنها", sourcesDiffer:"المصادر متباينة",
   goldstein:"مقياس غولدستاين", significance:"الأهمية", gdeltConf:"درجة الثقة",
   verification:"التحقق", impact:"وقوع الأثر", corrob:"المقالات المؤيدة",
-  yes:"نعم", noIntercept:"لا — اعتُرض السلاح أو أُحبط",
-  notReported:"غير مُبلَّغ عنه", notAssigned:"غير محدد", notScored:"غير مُقيَّم",
+  yes:"نعم", noIntercept:"لا — اعترض السلاح أو أحبط",
+  notReported:"غير مبلغ عنه", notAssigned:"غير محدد", notScored:"غير مقيم",
   none:"لا يوجد", noneLinked:"لا توجد", noSummary:"لا يوجد ملخص.",
-  summaryCoded:"الملخص كما ورد في المصدر", contribRecords:"السجلات المصدرية المكوِّنة",
+  summaryCoded:"الملخص كما ورد في المصدر", contribRecords:"السجلات المصدرية المكونة",
   stories:"الروابط المرجعية", openRef:"فتح المرجع", noStory:"لا توجد روابط مرجعية على هذه السجلات.",
   sourceArticles:"المقالات المصدرية الأصلية", via:"عبر",
   noSources:"لا توجد مقالات مصدرية مرفقة.", dedup:"إزالة التكرار",
   method:"الطريقة", confidence:"درجة الثقة",
-  singleRecord:"سجل واحد؛ لم يُطبَّق أي توحيد.",
-  rawNote:"تُحفظ السجلات الأولية دون تغيير في جدول raw_events. التوحيد ينشئ صفّ حادث جديدًا ولا يستبدل الأصول أو يحذفها إطلاقًا.",
+  singleRecord:"سجل واحد؛ لم يطبق أي توحيد.",
+  rawNote:"تحفظ السجلات الأولية دون تغيير في جدول raw_events. التوحيد ينشئ صف حادث جديدا ولا يستبدل الأصول أو يحذفها إطلاقا.",
   noCoords:"لا توجد إحداثيات صالحة", unknownPrec:"دقة غير معروفة",
-  noCountrySel:"لم تُحدَّد دولة", allCats:"كل التصنيفات", allRegions:"كل المناطق",
+  noCountrySel:"لم تحدد دولة", allCats:"كل التصنيفات", allRegions:"كل المناطق",
   allCountriesOpt:"كل الدول", allCountries:"→ كل الدول",
   selectCity:"— اختر مدينة —", proximityTo:"القرب من",
   catDist:"توزيع التصنيفات — انقر أي شريط لتدقيق الحوادث التي تقف خلفه",
   incWindow:"الحوادث ضمن النافذة المحددة", exactGeo:"إحداثيات دقيقة",
-  noCatInc:"لا توجد حوادث مصنّفة لهذه الدولة خلال", noIncFilters:"لا توجد حوادث بهذه المرشحات.",
+  noCatInc:"لا توجد حوادث مصنفة لهذه الدولة خلال", noIncFilters:"لا توجد حوادث بهذه المرشحات.",
   bInside:"داخل المدينة (أقل من 8 كم)", b025:"نحو 0–25 كم", b25100:"نحو 25–100 كم",
   bElse:"في مواضع أخرى من الدولة", bUnres:"الموقع الجغرافي غير محدد",
   noneBand:"لا يوجد ضمن هذا النطاق.",
-  proxNote:"الحوادث المرمّزة بدقة مركز الدولة أو الإقليم تُدرج بوصفها <em>غير محددة الموقع</em>، ولا تُحتسب إطلاقًا على أنها قريبة من %. الخطر في مواضع أخرى من دولة كبيرة لا يُعامل بوصفه خطرًا في هذا الموقع.",
+  proxNote:"الحوادث المرمزة بدقة مركز الدولة أو الإقليم تدرج بوصفها <em>غير محددة الموقع</em>، ولا تحتسب إطلاقا على أنها قريبة من %. الخطر في مواضع أخرى من دولة كبيرة لا يعامل بوصفه خطرا في هذا الموقع.",
   fatalOnly:"الحوادث المميتة فقط", plotted:"مرسوم",
   withheld:"محجوب: لا توجد إحداثيات دقيقة", openFull:"فتح سجل الحادث الكامل",
-  actorsNR:"الأطراف غير مُبلَّغ عنها",
-  loadFail:"تعذّر تحميل ملف data.json. شغّل أولًا:"
+  actorsNR:"الأطراف غير مبلغ عنها",
+  loadFail:"تعذر تحميل ملف data.json. شغل أولا:"
  },
  en:{
   brand:"Security &amp; Danger Dashboard", lastRefresh:"Last refresh",
@@ -536,7 +536,7 @@ const DICT={
   chg30:"30d change", fat30:"30d fatal.", fat90:"90d fatal.",
   prev30full:"Previous 30 days", fat30full:"30d fatalities", fat90full:"90d fatalities",
   basis:"Reporting basis", rolling:"Rolling windows",
-  secCats:"Security categories &mdash; counts are clickable and open the incidents behind them",
+  secCats:"Security categories",
   currency:"Currency", lastSig:"Last significant incident", latestEvent:"Latest event",
   noCoverage:"no coverage",
   noCovHint:"This period has not been ingested yet. It is not zero events.",
@@ -596,7 +596,7 @@ const T=k=>DICT[LANG][k]??DICT.en[k]??k;
 
 /* Category names are keyed on the stable machine code, so the Arabic label is a
    translation of the policy category and never of a source's own wording. */
-const CAT_AR={ARMED_CONFLICT:"نزاع مسلح واشتباكات",AIR_MISSILE_DRONE:"ضربات جوية وصواريخ ومسيّرات",
+const CAT_AR={ARMED_CONFLICT:"نزاع مسلح واشتباكات",AIR_MISSILE_DRONE:"ضربات جوية وصواريخ ومسيرات",
  TERRORISM_IED:"إرهاب وتفجيرات وعبوات ناسفة",VIOLENCE_AGAINST_CIVILIANS:"عنف ضد المدنيين",
  KIDNAPPING:"اختطاف واحتجاز رهائن",VIOLENT_UNREST:"شغب واضطرابات عنيفة",
  ARMED_GROUPS:"جماعات مسلحة وميليشيات",FOREIGN_DIPLOMATIC_TARGET:"استهداف أجانب وبعثات دبلوماسية",
@@ -619,9 +619,9 @@ const SHORT={
 const TREND=l=>({"SIGNIFICANT ESCALATION":T("tr_esc"),DETERIORATING:T("tr_det"),
  STABLE:T("tr_sta"),IMPROVING:T("tr_imp"),"NO ACTIVITY":T("tr_na"),
  "INSUFFICIENT HISTORY":T("tr_nc")}[l]||l);
-const VERIF_AR={VERIFIED_MULTI_SOURCE:"مُتحقَّق منه من مصادر متعددة",
- VERIFIED_SINGLE_SOURCE:"مُتحقَّق منه من مصدر واحد",
- INSUFFICIENT_EVENT_LEVEL_VERIFICATION:"تحقّق غير كافٍ على مستوى الحدث"};
+const VERIF_AR={VERIFIED_MULTI_SOURCE:"متحقق منه من مصادر متعددة",
+ VERIFIED_SINGLE_SOURCE:"متحقق منه من مصدر واحد",
+ INSUFFICIENT_EVENT_LEVEL_VERIFICATION:"تحقق غير كاف على مستوى الحدث"};
 const VERIF=v=>LANG==="ar"?(VERIF_AR[v]||v):String(v).replace(/_/g," ");
 
 /* GDELT's 19 region buckets, verified against a live group_by=region call
@@ -669,7 +669,7 @@ const AR_COUNTRY={
 "Montenegro":"الجبل الأسود","Morocco":"المغرب","Mozambique":"موزمبيق","Myanmar":"ميانمار","Burma":"ميانمار",
 "Namibia":"ناميبيا","Nauru":"ناورو","Nepal":"نيبال","Netherlands":"هولندا","New Zealand":"نيوزيلندا",
 "Nicaragua":"نيكاراغوا","Niger":"النيجر","Nigeria":"نيجيريا","North Korea":"كوريا الشمالية",
-"North Macedonia":"مقدونيا الشمالية","Macedonia":"مقدونيا الشمالية","Norway":"النرويج","Oman":"عُمان",
+"North Macedonia":"مقدونيا الشمالية","Macedonia":"مقدونيا الشمالية","Norway":"النرويج","Oman":"عمان",
 "Pakistan":"باكستان","Palau":"بالاو","Palestine":"فلسطين","Panama":"بنما","Papua New Guinea":"بابوا غينيا الجديدة",
 "Paraguay":"باراغواي","Peru":"بيرو","Philippines":"الفلبين","Poland":"بولندا","Portugal":"البرتغال",
 "Puerto Rico":"بورتوريكو","Qatar":"قطر","Romania":"رومانيا","Russia":"روسيا","Rwanda":"رواندا",
@@ -699,7 +699,7 @@ const CTRY=c=>{
 function applyStatic(){
   document.documentElement.lang = LANG;
   document.documentElement.dir  = LANG==="ar" ? "rtl" : "ltr";
-  document.title = LANG==="ar" ? "لوحة الأمن والخطر"
+  document.title = LANG==="ar" ? "الأخبار الأمنية والخطرة"
                                : "Security & Danger Dashboard";
   $$("[data-i18n]").forEach(el=>el.innerHTML=T(el.dataset.i18n));
   $$("[data-i18n-ph]").forEach(el=>el.placeholder=T(el.dataset.i18nPh));
@@ -756,7 +756,7 @@ function renderSources(){
       <span class="eff">(${esc(s.icsc.current_period)})</span></span>
     <span><a href="${esc(s.dssr650.list_url)}" target="_blank" rel="noopener">${T("srcDssr")}</a>
       <span class="eff">(${T("effective")} ${esc(s.dssr650.rates_effective)})</span></span>
-    <span class="eff">${T("designationNote")}</span>`;
+`;
 }
 
 function statusCell(r){
