@@ -59,6 +59,37 @@ class GdeltClient:
         })
 
     # -- transport ----------------------------------------------------------
+    @staticmethod
+    def _error_envelope(r) -> tuple[str, str]:
+        """Pull (code, message) out of an error response.
+
+        The API returns the code at the TOP level, with `error` a plain string:
+
+            {"success": false, "error": "...", "code": "CURSOR_STALE", "details": {...}}
+
+        An earlier version assumed `error` was a nested object and read
+        `error.code`. That raises on a string, a bare except swallowed it, and
+        every error arrived labelled HTTP_ERROR. Two behaviours depended on the
+        real code and so never ran: the cursor walk never restarted on
+        CURSOR_STALE, and an exhausted quota was retried as ordinary throttling.
+        Both shapes are accepted now.
+        """
+        code, msg = "HTTP_ERROR", (r.text or "")[:300]
+        try:
+            body = r.json()
+        except Exception:
+            return code, msg
+        if not isinstance(body, dict):
+            return code, msg
+        err = body.get("error")
+        if isinstance(err, dict):                  # tolerated alternative shape
+            code = err.get("code") or code
+            msg = err.get("message") or msg
+        elif isinstance(err, str) and err:
+            msg = err
+        code = body.get("code") or code            # authoritative location
+        return code, msg
+
     def _get(self, path: str, params: dict[str, Any], attempt: int = 0) -> dict:
         r = self.s.get(f"{BASE}{path}", params=params, timeout=self.timeout)
 
@@ -67,7 +98,7 @@ class GdeltClient:
             # opposite responses, so read the code, not the status.
             code = ""
             try:
-                code = (r.json().get("error") or {}).get("code", "")
+                code, _ = self._error_envelope(r)
             except Exception:
                 pass
             if code == "QUOTA_EXCEEDED":
@@ -86,12 +117,7 @@ class GdeltClient:
             return self._get(path, params, attempt + 1)
 
         if not r.ok:
-            code, msg = "HTTP_ERROR", r.text[:300]
-            try:
-                err = (r.json().get("error") or {})
-                code, msg = err.get("code", code), err.get("message", msg)
-            except Exception:
-                pass
+            code, msg = self._error_envelope(r)
             raise GdeltError(code, msg, r.status_code)
 
         return r.json()
