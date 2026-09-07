@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Global Security &amp; Danger Dashboard</title>
+<title>لوحة الأمن والخطر العالمية</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --canvas:#eceff3; --surface:#fff; --surface-2:#f6f8fa;
@@ -13,12 +16,16 @@
   --s1:#e8b44a; --s2:#dd8434; --s3:#c04f2c; --s4:#8d2020;
   --up:#a8342a; --down:#1c6f52; --flat:#69737f;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --ar:"Sakkal Majalla","Majalla UI","Noto Naskh Arabic","Traditional Arabic",
+       "Geeza Pro","Segoe UI",Tahoma,sans-serif;
+  --latin:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --panel-hidden:100%;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{
   background:var(--canvas); color:var(--ink);
-  font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  font:13px/1.45 var(--latin);
   font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
 }
 .num{font-variant-numeric:tabular-nums}
@@ -31,22 +38,22 @@ a{color:var(--accent)}
   background:var(--ink);color:#fff;border-bottom:3px solid var(--accent);
 }
 .status .brand{padding:11px 18px;font-weight:650;letter-spacing:.01em;font-size:14px;
-  border-right:1px solid #2c3540;display:flex;align-items:center;gap:9px}
+  border-inline-end:1px solid #2c3540;display:flex;align-items:center;gap:9px}
 .status .brand span{font-weight:400;color:#93a0ae;font-size:11.5px}
-.stat{padding:9px 18px;border-right:1px solid #2c3540;min-width:132px}
+.stat{padding:9px 18px;border-inline-end:1px solid #2c3540;min-width:132px}
 .stat b{display:block;font-size:13.5px;font-weight:600;letter-spacing:.01em}
 .stat i{display:block;font-style:normal;font-size:10.5px;color:#93a0ae;margin-bottom:2px;
   letter-spacing:.02em}
 .stat.warn b{color:#ffc96b}
 .status .spacer{flex:1;border:0}
 .viewtabs{display:flex;align-items:stretch}
-.viewtabs button{padding:0 17px;color:#b6c0cb;font-size:12.5px;border-left:1px solid #2c3540}
+.viewtabs button{padding:0 17px;color:#b6c0cb;font-size:12.5px;border-inline-start:1px solid #2c3540}
 .viewtabs button[aria-selected=true]{background:var(--accent);color:#fff;font-weight:600}
 
 /* ---- toolbar --------------------------------------------------------- */
 .toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;
   padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--rule)}
-.toolbar label{font-size:11px;color:var(--muted);margin-right:-4px}
+.toolbar label{font-size:11px;color:var(--muted);margin-inline-end:-4px}
 input[type=search],select{
   border:1px solid var(--rule);background:var(--surface);border-radius:2px;
   padding:5px 7px;font:inherit;font-size:12px;color:var(--ink);min-height:28px}
@@ -54,10 +61,10 @@ input[type=search]{min-width:210px}
 input:focus-visible,select:focus-visible,button:focus-visible,
 [tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .winsel{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
-.winsel button{padding:5px 11px;font-size:12px;color:var(--ink-2);border-right:1px solid var(--rule)}
-.winsel button:last-child{border-right:0}
+.winsel button{padding:5px 11px;font-size:12px;color:var(--ink-2);border-inline-end:1px solid var(--rule)}
+.winsel button:last-child{border-inline-end:0}
 .winsel button[aria-pressed=true]{background:var(--accent);color:#fff;font-weight:600}
-.pill{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.pill{margin-inline-start:auto;font-size:11.5px;color:var(--muted)}
 .linkbtn{color:var(--accent);font-size:12px;text-decoration:underline}
 
 /* ---- table ----------------------------------------------------------- */
@@ -65,24 +72,24 @@ input:focus-visible,select:focus-visible,button:focus-visible,
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
 thead th{
   position:sticky;top:0;z-index:3;background:var(--surface-2);
-  border-bottom:1px solid var(--rule);border-right:1px solid var(--rule-2);
-  padding:6px 8px;text-align:right;font-weight:600;font-size:11px;color:var(--ink-2);
+  border-bottom:1px solid var(--rule);border-inline-end:1px solid var(--rule-2);
+  padding:6px 8px;text-align:end;font-weight:600;font-size:11px;color:var(--ink-2);
   white-space:nowrap;cursor:pointer;vertical-align:bottom}
-thead th.l{text-align:left}
+thead th.l{text-align:start}
 thead th .sub{display:block;font-weight:400;color:var(--muted);font-size:10px}
-thead th[aria-sort]:after{content:"";margin-left:4px;opacity:.75}
+thead th[aria-sort]:after{content:"";margin-inline-start:4px;opacity:.75}
 thead th[aria-sort=descending]:after{content:"\25BE"}
 thead th[aria-sort=ascending]:after{content:"\25B4"}
 th.group{text-align:center;font-size:10px;color:var(--muted);text-transform:none;
   background:var(--surface);border-bottom:1px solid var(--rule-2)}
-tbody td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--rule-2);
-  border-right:1px solid var(--rule-2);white-space:nowrap}
-tbody td.l{text-align:left}
+tbody td{padding:5px 8px;text-align:end;border-bottom:1px solid var(--rule-2);
+  border-inline-end:1px solid var(--rule-2);white-space:nowrap}
+tbody td.l{text-align:start}
 tbody tr:hover{background:#f2f6fa}
-td.country{position:sticky;left:0;background:var(--surface);z-index:2;
-  border-right:1px solid var(--rule);font-weight:600}
+td.country{position:sticky;inset-inline-start:0;background:var(--surface);z-index:2;
+  border-inline-end:1px solid var(--rule);font-weight:600}
 tbody tr:hover td.country{background:#f2f6fa}
-thead th.country{position:sticky;left:0;z-index:4}
+thead th.country{position:sticky;inset-inline-start:0;z-index:4}
 .cnt{display:inline-block;min-width:22px;padding:1px 5px;border-radius:2px;
   text-decoration:none;color:var(--ink);cursor:pointer}
 .cnt:hover{background:var(--accent);color:#fff}
@@ -100,26 +107,26 @@ thead th.country{position:sticky;left:0;z-index:4}
 .scrim{position:fixed;inset:0;background:rgba(20,26,33,.42);opacity:0;pointer-events:none;
   transition:opacity .16s;z-index:40}
 .scrim.on{opacity:1;pointer-events:auto}
-.panel{position:fixed;top:0;right:0;bottom:0;width:min(680px,94vw);background:var(--surface);
-  border-left:1px solid var(--rule);z-index:50;display:flex;flex-direction:column;
-  transform:translateX(100%);transition:transform .2s cubic-bezier(.3,.7,.3,1);
-  box-shadow:-8px 0 28px rgba(20,26,33,.16)}
+.panel{position:fixed;top:0;inset-inline-end:0;bottom:0;width:min(680px,94vw);background:var(--surface);
+  border-inline-start:1px solid var(--rule);z-index:50;display:flex;flex-direction:column;
+  transform:translateX(var(--panel-hidden));transition:transform .2s cubic-bezier(.3,.7,.3,1);
+  box-shadow:0 0 28px rgba(20,26,33,.16)}
 .panel.on{transform:none}
 .panel header{padding:12px 16px;border-bottom:1px solid var(--rule);background:var(--surface-2)}
 .panel header h2{margin:0;font-size:15px;font-weight:650}
 .panel .body{overflow:auto;padding:14px 16px;flex:1}
-.close{position:absolute;top:9px;right:12px;font-size:20px;color:var(--muted);line-height:1;
+.close{position:absolute;top:9px;inset-inline-end:12px;font-size:20px;color:var(--muted);line-height:1;
   padding:4px 8px}
 .trail{font-size:10.5px;color:var(--muted);margin-bottom:6px;letter-spacing:.02em;
-  display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding-right:34px}
+  display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding-inline-end:34px}
 .trail b{color:var(--accent);font-weight:600}
 .trail .sep{color:#adb6c0}
-.audit{background:var(--accent-soft);border-left:3px solid var(--accent);
+.audit{background:var(--accent-soft);border-inline-start:3px solid var(--accent);
   padding:8px 11px;font-size:11.5px;color:var(--ink-2);margin-bottom:12px}
 
-.inc{border:1px solid var(--rule-2);border-left:3px solid var(--rule);
+.inc{border:1px solid var(--rule-2);border-inline-start:3px solid var(--rule);
   padding:9px 11px;margin-bottom:9px;background:var(--surface);cursor:pointer}
-.inc:hover{border-left-color:var(--accent);background:var(--surface-2)}
+.inc:hover{border-inline-start-color:var(--accent);background:var(--surface-2)}
 .inc h3{margin:0 0 3px;font-size:13px;font-weight:600;line-height:1.35}
 .inc .meta{font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:7px}
 .inc .sum{font-size:11.5px;color:var(--ink-2);margin-top:5px;
@@ -142,7 +149,7 @@ ul.srcs .dom{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
 .evbox{background:var(--surface-2);border:1px solid var(--rule-2);padding:8px 10px;
   font-size:11px;font-family:var(--mono);white-space:pre-wrap;color:var(--ink-2);
   max-height:220px;overflow:auto}
-.rationale{font-size:11.5px;color:var(--ink-2);margin:0;padding-left:16px}
+.rationale{font-size:11.5px;color:var(--ink-2);margin:0;padding-inline-start:16px}
 .rationale li{margin-bottom:3px}
 
 /* ---- country + map views -------------------------------------------- */
@@ -156,7 +163,7 @@ ul.srcs .dom{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
 .bar .lab{width:186px;color:var(--ink-2)}
 .bar .track{flex:1;height:13px;background:var(--surface-2);position:relative}
 .bar .fill{height:100%;background:var(--accent)}
-.bar .n{width:34px;text-align:right;font-weight:600}
+.bar .n{width:34px;text-align:end;font-weight:600}
 #map{height:calc(100vh - 152px);background:#dfe4ea}
 .maptools{display:flex;gap:9px;flex-wrap:wrap;padding:9px 14px;background:var(--surface);
   border-bottom:1px solid var(--rule);align-items:center}
@@ -175,8 +182,30 @@ ul.srcs .dom{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
 @media(max-width:760px){
   .tablewrap{height:auto;max-height:none}
   dl.kv{grid-template-columns:1fr}
-  .status .brand{width:100%;border-right:0}
+  .status .brand{width:100%;border-inline-end:0}
 }
+html[dir=rtl]{--panel-hidden:-100%}
+html[dir=rtl] body{font-family:var(--ar);font-size:14.5px;line-height:1.7}
+html[dir=rtl] .status .brand{font-size:15.5px}
+html[dir=rtl] table{font-size:13px}
+html[dir=rtl] thead th{font-size:12px}
+html[dir=rtl] .bar .lab{width:210px}
+html[dir=rtl] dl.kv{grid-template-columns:170px 1fr}
+
+/* GDELT codes its source text in English. Isolating it keeps trailing
+   punctuation, parentheses and digits attached to the right words instead of
+   migrating to the far end of an RTL line. */
+.en{direction:ltr;unicode-bidi:isolate;text-align:left}
+html[dir=rtl] .inc h3,html[dir=rtl] .inc .sum,html[dir=rtl] .evbox,
+html[dir=rtl] ul.srcs li,html[dir=rtl] .leaflet-popup-content h3{direction:ltr;text-align:left}
+html[dir=rtl] .inc{border-inline-start-width:3px}
+/* Digits stay Western and read left-to-right inside Arabic text. */
+.num,.badge.fat,code,.dom{direction:ltr;unicode-bidi:isolate}
+html[dir=rtl] .trail{padding-inline-end:34px;padding-left:0}
+.langsel{display:flex;align-items:stretch}
+.langsel button{padding:0 13px;color:#b6c0cb;font-size:12px;
+  border-inline-start:1px solid #2c3540}
+.langsel button[aria-pressed=true]{color:#fff;font-weight:600;background:#2c3540}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -187,19 +216,20 @@ ul.srcs .dom{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
 <!-- ============ GLOBAL VIEW ============ -->
 <section class="view on" id="v-global">
   <div class="toolbar">
-    <input type="search" id="q" placeholder="Search country or incident text" aria-label="Search">
-    <label for="f-region">Region</label><select id="f-region"></select>
-    <label for="f-cat">Category</label><select id="f-cat"></select>
-    <label for="f-trend">Trend</label><select id="f-trend">
-      <option value="">All</option><option>SIGNIFICANT ESCALATION</option>
-      <option>DETERIORATING</option><option>STABLE</option><option>IMPROVING</option><option>INSUFFICIENT HISTORY</option>
+    <input type="search" id="q" data-i18n-ph="search" aria-label="Search">
+    <label for="f-region" data-i18n="region"></label><select id="f-region"></select>
+    <label for="f-cat" data-i18n="category"></label><select id="f-cat"></select>
+    <label for="f-trend" data-i18n="trend"></label><select id="f-trend">
+      <option value="" data-i18n="all"></option><option value="SIGNIFICANT ESCALATION" data-i18n="tr_esc"></option>
+      <option value="DETERIORATING" data-i18n="tr_det"></option><option value="STABLE" data-i18n="tr_sta"></option>
+      <option value="IMPROVING" data-i18n="tr_imp"></option><option value="INSUFFICIENT HISTORY" data-i18n="tr_nc"></option>
     </select>
-    <label for="f-status">Danger</label><select id="f-status"><option value="">All</option></select>
+    <label for="f-status" data-i18n="danger"></label><select id="f-status"><option value="">All</option></select>
     <div class="winsel" role="group" aria-label="Counting window">
-      <button data-win="d7">7 days</button>
-      <button data-win="d30" aria-pressed="true">30 days</button>
-      <button data-win="d90">90 days</button>
-      <button data-win="all">Full store</button>
+      <button data-win="d7" data-i18n="w7"></button>
+      <button data-win="d30" aria-pressed="true" data-i18n="w30"></button>
+      <button data-win="d90" data-i18n="w90"></button>
+      <button data-win="all" data-i18n="wall"></button>
     </div>
     <span class="pill" id="rowcount"></span>
   </div>
@@ -209,22 +239,22 @@ ul.srcs .dom{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
 <!-- ============ COUNTRY VIEW ============ -->
 <section class="view" id="v-country">
   <div class="toolbar">
-    <button class="linkbtn" id="backGlobal">&larr; All countries</button>
+    <button class="linkbtn" id="backGlobal" data-i18n="allCountries"></button>
     <strong id="cName" style="font-size:14px"></strong>
     <span class="status-tag" id="cStatus"></span>
     <span id="cTrend"></span>
-    <label for="cCat" style="margin-left:12px">Category</label>
+    <label for="cCat" style="margin-inline-start:12px" data-i18n="category"></label>
     <select id="cCat"></select>
-    <label for="cCity">Proximity to</label>
+    <label for="cCity" data-i18n="proximityTo"></label>
     <select id="cCity"><option value="">— select a city —</option></select>
     <span class="pill" id="cCount"></span>
   </div>
   <div style="padding:14px;overflow:auto;height:calc(100vh - 152px)">
     <div class="cgrid" id="cStats"></div>
     <div id="cProx"></div>
-    <h4 class="sec">Category distribution &mdash; click any bar to audit the incidents behind it</h4>
+    <h4 class="sec" data-i18n="catDist"></h4>
     <div id="cBars"></div>
-    <h4 class="sec">Incidents in the selected window</h4>
+    <h4 class="sec" data-i18n="incWindow"></h4>
     <div id="cList"></div>
   </div>
 </section>
@@ -232,13 +262,13 @@ ul.srcs .dom{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
 <!-- ============ MAP VIEW ============ -->
 <section class="view" id="v-map">
   <div class="maptools">
-    <label for="m-country">Country</label><select id="m-country"></select>
-    <label for="m-cat">Category</label><select id="m-cat"></select>
-    <label for="m-win">Window</label><select id="m-win">
-      <option value="d7">7 days</option><option value="d30" selected>30 days</option>
-      <option value="d90">90 days</option><option value="all">Full store</option>
+    <label for="m-country" data-i18n="country"></label><select id="m-country"></select>
+    <label for="m-cat" data-i18n="category"></label><select id="m-cat"></select>
+    <label for="m-win" data-i18n="window"></label><select id="m-win">
+      <option value="d7" data-i18n="w7"></option><option value="d30" selected data-i18n="w30"></option>
+      <option value="d90" data-i18n="w90"></option><option value="all" data-i18n="wall"></option>
     </select>
-    <label><input type="checkbox" id="m-fatal"> Fatal incidents only</label>
+    <label><input type="checkbox" id="m-fatal"> <span data-i18n="fatalOnly"></span></label>
     <span class="pill" id="m-count"></span>
   </div>
   <div id="map"></div>
@@ -275,11 +305,197 @@ const CITIES = {
 const COLS = ["ARMED_CONFLICT","AIR_MISSILE_DRONE","TERRORISM_IED","VIOLENCE_AGAINST_CIVILIANS",
   "KIDNAPPING","VIOLENT_UNREST","ARMED_GROUPS","FOREIGN_DIPLOMATIC_TARGET",
   "TRANSPORT_ACCESS_DISRUPTION","STATE_CONTROL_BREAKDOWN","OTHER_SERIOUS_THREAT"];
-const SHORT = {ARMED_CONFLICT:"Battles",AIR_MISSILE_DRONE:"Air / missile",
-  TERRORISM_IED:"Terror / IED",VIOLENCE_AGAINST_CIVILIANS:"Civilians",KIDNAPPING:"Kidnap",
-  VIOLENT_UNREST:"Unrest",ARMED_GROUPS:"Armed groups",FOREIGN_DIPLOMATIC_TARGET:"Foreign / dipl.",
+
+
+/* ---------- language ---------- */
+/* Arabic is the interface language. GDELT's own text stays English because that
+   is how the source codes it; translating incident titles would put words in a
+   source's mouth, so they are isolated as LTR rather than rewritten. */
+let LANG = localStorage.getItem("gsd_lang") || "ar";
+const DICT={
+ ar:{
+  brand:"لوحة الأمن والخطر العالمية", lastRefresh:"آخر تحديث",
+  latestEventDate:"تاريخ أحدث حدث", coverageStart:"بداية تغطية البيانات",
+  incidentsStored:"الحوادث المخزّنة", rawEvents:"سجلات GDELT الأولية",
+  vGlobal:"عالمي", vCountry:"الدولة", vMap:"الخريطة",
+  search:"ابحث في الدول أو نص الحوادث", region:"المنطقة", category:"التصنيف",
+  trend:"الاتجاه", danger:"الخطر", all:"الكل", window:"النافذة",
+  w7:"7 أيام", w30:"30 يومًا", w90:"90 يومًا", wall:"كامل المخزون",
+  c7:"7 أيام", c30:"30 يومًا", c90:"90 يومًا",
+  lw7:"آخر 7 أيام", lw30:"آخر 30 يومًا", lw90:"آخر 90 يومًا", lwall:"كامل السجل المخزّن",
+  country:"الدولة", dangerStatus:"حالة الخطر", prev30:"الـ30 السابقة",
+  chg30:"التغير خلال 30 يومًا", fat30:"وفيات 30 يومًا", fat90:"وفيات 90 يومًا",
+  prev30full:"الـ30 يومًا السابقة", fat30full:"وفيات 30 يومًا", fat90full:"وفيات 90 يومًا",
+  basis:"أساس التقرير", rolling:"النوافذ الزمنية المتحركة",
+  secCats:"التصنيفات الأمنية — الأعداد قابلة للنقر وتفتح الحوادث التي تقف خلفها",
+  currency:"حداثة البيانات", lastSig:"آخر حادث جوهري", latestEvent:"أحدث حدث",
+  noCoverage:"لا توجد تغطية",
+  noCovHint:"هذه الفترة لم تُستورد بعد. هذا لا يعني عدم وقوع أحداث.",
+  openCount:"فتح الحوادث المحتسبة هنا (%)", noneInWindow:"لا يوجد ضمن النافذة",
+  noCountries:"لا توجد دول مطابقة لهذه المرشحات.",
+  countriesWord:"دولة", incidentsWord:"حادث في المخزون", incidentsWord2:"حادث",
+  tr_esc:"تصعيد كبير", tr_det:"تدهور", tr_sta:"مستقر", tr_imp:"تحسّن",
+  tr_nc:"سجل غير كافٍ", tr_na:"لا نشاط",
+  world:"العالم", incident:"حادث", gdeltEvent:"حدث GDELT", sourceArticle:"المقال المصدر",
+  auditCat:(n,cat,a,b,w,c)=>`هذه هي الحوادث الـ<b>${n}</b> ذاتها التي ينتج عنها الرقم الظاهر في الجدول.
+    الأساس: التصنيف الأمني <b>${cat}</b>، وتاريخ الحدث بين <b>${a}</b> و<b>${b}</b> (${w})، والدولة <b>${c}</b>.
+    تغيير النافذة الزمنية في شريط الأدوات يغيّر العدد وهذه القائمة معًا.`,
+  auditInc:(id,n)=>`الحادث <b>${id}</b> يوحّد <b>${n}</b> من سجلات أحداث GDELT.
+    كل رقم أدناه مخزَّن، ولم يُشتق لحظة العرض.`,
+  auditProx:(n,city,w)=>`<b>${n}</b> حادث، مقيسة من ${city} باستخدام الإحداثيات المخزّنة لكل حادث. الأساس: ${w}.`,
+  noneCell:"لا توجد حوادث في هذه الخانة ضمن النافذة المحددة.",
+  untitled:"حادث بلا عنوان", killed:"قتيل", disputedShort:"(متنازع عليه)",
+  mergedN:"دُمج % من سجلات GDELT", intercepted:"اعتُرض / بلا أثر",
+  geoUnres:"الموقع الجغرافي غير محدد",
+  date:"التاريخ", adminRegion:"المنطقة الإدارية", place:"الموقع", coords:"الإحداثيات",
+  secCat:"التصنيف الأمني", secSub:"النوع الفرعي", overlays:"مؤشرات إضافية",
+  nativeCat:"تصنيف GDELT الأصلي", catDispute:"تعارض في التصنيف",
+  codedDiff:"السجلات المدمجة رُمّزت بشكل مختلف", actors:"الأطراف", orgs:"المنظمات",
+  fatalities:"الوفيات المبلغ عنها", sourcesDiffer:"المصادر متباينة",
+  goldstein:"مقياس غولدستاين", significance:"الأهمية", gdeltConf:"درجة ثقة GDELT",
+  verification:"التحقق", impact:"وقوع الأثر", corrob:"المقالات المؤيدة",
+  yes:"نعم", noIntercept:"لا — اعتُرض السلاح أو أُحبط",
+  notReported:"غير مُبلَّغ عنه", notAssigned:"غير محدد", notScored:"غير مُقيَّم",
+  none:"لا يوجد", noneLinked:"لا توجد", noSummary:"لا يوجد ملخص.",
+  summaryCoded:"الملخص كما ورد في المصدر", contribRecords:"سجلات أحداث GDELT المكوِّنة",
+  stories:"قصص GDELT Cloud", noStory:"لا يوجد رابط قصة على هذه السجلات.",
+  sourceArticles:"المقالات المصدرية الأصلية", via:"عبر",
+  noSources:"لا توجد مقالات مصدرية مرفقة.", dedup:"إزالة التكرار",
+  method:"الطريقة", confidence:"درجة الثقة",
+  singleRecord:"سجل واحد؛ لم يُطبَّق أي توحيد.",
+  rawNote:"تُحفظ سجلات GDELT الأولية دون تغيير في جدول raw_events. التوحيد ينشئ صفّ حادث جديدًا ولا يستبدل الأصول أو يحذفها إطلاقًا.",
+  noCoords:"لا توجد إحداثيات صالحة", unknownPrec:"دقة غير معروفة",
+  noCountrySel:"لم تُحدَّد دولة", allCats:"كل التصنيفات", allRegions:"كل المناطق",
+  allCountriesOpt:"كل الدول", allCountries:"→ كل الدول",
+  selectCity:"— اختر مدينة —", proximityTo:"القرب من",
+  catDist:"توزيع التصنيفات — انقر أي شريط لتدقيق الحوادث التي تقف خلفه",
+  incWindow:"الحوادث ضمن النافذة المحددة", exactGeo:"إحداثيات دقيقة",
+  noCatInc:"لا توجد حوادث مصنّفة لهذه الدولة خلال", noIncFilters:"لا توجد حوادث بهذه المرشحات.",
+  bInside:"داخل المدينة (أقل من 8 كم)", b025:"نحو 0–25 كم", b25100:"نحو 25–100 كم",
+  bElse:"في مواضع أخرى من الدولة", bUnres:"الموقع الجغرافي غير محدد",
+  noneBand:"لا يوجد ضمن هذا النطاق.",
+  proxNote:"الحوادث المرمّزة بدقة مركز الدولة أو الإقليم تُدرج بوصفها <em>غير محددة الموقع</em>، ولا تُحتسب إطلاقًا على أنها قريبة من %. الخطر في مواضع أخرى من دولة كبيرة لا يُعامل بوصفه خطرًا في هذا الموقع.",
+  fatalOnly:"الحوادث المميتة فقط", plotted:"مرسوم",
+  withheld:"محجوب: لا توجد إحداثيات دقيقة", openFull:"فتح سجل الحادث الكامل",
+  actorsNR:"الأطراف غير مُبلَّغ عنها",
+  loadFail:"تعذّر تحميل ملف data.json. شغّل أولًا:"
+ },
+ en:{
+  brand:"Global Security &amp; Danger Dashboard", lastRefresh:"Last refresh",
+  latestEventDate:"Latest event date", coverageStart:"Data coverage start",
+  incidentsStored:"Incidents in store", rawEvents:"Raw GDELT events",
+  vGlobal:"Global", vCountry:"Country", vMap:"Map",
+  search:"Search country or incident text", region:"Region", category:"Category",
+  trend:"Trend", danger:"Danger", all:"All", window:"Window",
+  w7:"7 days", w30:"30 days", w90:"90 days", wall:"Full store",
+  c7:"7d", c30:"30d", c90:"90d",
+  lw7:"last 7 days", lw30:"last 30 days", lw90:"last 90 days", lwall:"full stored history",
+  country:"Country", dangerStatus:"Danger status", prev30:"Prev 30d",
+  chg30:"30d change", fat30:"30d fatal.", fat90:"90d fatal.",
+  prev30full:"Previous 30 days", fat30full:"30d fatalities", fat90full:"90d fatalities",
+  basis:"Reporting basis", rolling:"Rolling windows",
+  secCats:"Security categories &mdash; counts are clickable and open the incidents behind them",
+  currency:"Currency", lastSig:"Last significant incident", latestEvent:"Latest event",
+  noCoverage:"no coverage",
+  noCovHint:"This period has not been ingested yet. It is not zero events.",
+  openCount:"Open the % incident(s) counted here", noneInWindow:"none in window",
+  noCountries:"No countries match these filters.",
+  countriesWord:"countries", incidentsWord:"incidents in store", incidentsWord2:"incidents",
+  tr_esc:"SIGNIFICANT ESCALATION", tr_det:"DETERIORATING", tr_sta:"STABLE",
+  tr_imp:"IMPROVING", tr_nc:"insufficient history", tr_na:"NO ACTIVITY",
+  world:"World", incident:"Incident", gdeltEvent:"GDELT event", sourceArticle:"source article",
+  auditCat:(n,cat,a,b,w,c)=>`These are the exact <b>${n}</b> incident(s) that produce the figure
+    shown in the table. Basis: security category <b>${cat}</b>, event date between <b>${a}</b> and
+    <b>${b}</b> (${w}), country <b>${c}</b>. Changing the window in the toolbar changes both the
+    count and this list together.`,
+  auditInc:(id,n)=>`Incident <b>${id}</b> consolidates <b>${n}</b> GDELT event record(s).
+    Every figure below is stored, not derived at display time.`,
+  auditProx:(n,city,w)=>`<b>${n}</b> incident(s), measured from ${city} using each incident's own
+    stored coordinates. Basis: ${w}.`,
+  noneCell:"No incidents in this cell for the selected window.",
+  untitled:"Untitled incident", killed:"killed", disputedShort:"(disputed)",
+  mergedN:"% GDELT records merged", intercepted:"intercepted / no impact",
+  geoUnres:"geography unresolved",
+  date:"Date", adminRegion:"Admin region", place:"Place", coords:"Coordinates",
+  secCat:"Security category", secSub:"Security subtype", overlays:"Overlay flags",
+  nativeCat:"Native GDELT category", catDispute:"Category dispute",
+  codedDiff:"merged records coded differently", actors:"Actors", orgs:"Organizations",
+  fatalities:"Reported fatalities", sourcesDiffer:"sources differ",
+  goldstein:"Goldstein scale", significance:"Significance", gdeltConf:"GDELT confidence",
+  verification:"Verification", impact:"Impact realised", corrob:"Corroborating articles",
+  yes:"yes", noIntercept:"no &mdash; weapon intercepted or disrupted",
+  notReported:"not reported", notAssigned:"not assigned", notScored:"not scored",
+  none:"none", noneLinked:"none linked", noSummary:"No summary available.",
+  summaryCoded:"Summary as coded", contribRecords:"Contributing GDELT event records",
+  stories:"GDELT Cloud stories", noStory:"No story URL on these records.",
+  sourceArticles:"Original source articles", via:"via",
+  noSources:"No source articles attached.", dedup:"Deduplication",
+  method:"Method", confidence:"Confidence",
+  singleRecord:"Single record; no consolidation was applied.",
+  rawNote:"Raw GDELT records are retained unchanged in raw_events. Consolidation creates a new incident row and never overwrites or deletes the originals.",
+  noCoords:"no usable coordinates", unknownPrec:"unknown precision",
+  noCountrySel:"No country selected", allCats:"All categories", allRegions:"All regions",
+  allCountriesOpt:"All countries", allCountries:"&larr; All countries",
+  selectCity:"— select a city —", proximityTo:"Proximity to",
+  catDist:"Category distribution &mdash; click any bar to audit the incidents behind it",
+  incWindow:"Incidents in the selected window", exactGeo:"Exact geography",
+  noCatInc:"No categorised incidents for this country in", noIncFilters:"No incidents for these filters.",
+  bInside:"Inside city (under 8 km)", b025:"Approximately 0–25 km", b25100:"Approximately 25–100 km",
+  bElse:"Elsewhere in country", bUnres:"Geography unresolved",
+  noneBand:"None in this band.",
+  proxNote:"Incidents coded at country or region centroid precision are listed as <em>geography unresolved</em> and are never counted as near %. Danger elsewhere in a large country is not treated as danger at this location.",
+  fatalOnly:"Fatal incidents only", plotted:"plotted",
+  withheld:"withheld: no exact coordinates", openFull:"Open full incident record",
+  actorsNR:"actors not reported",
+  loadFail:"Could not load <code>data.json</code>. Run first:"
+ }
+};
+const T=k=>DICT[LANG][k]??DICT.en[k]??k;
+
+/* Category names are keyed on the stable machine code, so the Arabic label is a
+   translation of the policy category and never of a source's own wording. */
+const CAT_AR={ARMED_CONFLICT:"نزاع مسلح واشتباكات",AIR_MISSILE_DRONE:"ضربات جوية وصواريخ ومسيّرات",
+ TERRORISM_IED:"إرهاب وتفجيرات وعبوات ناسفة",VIOLENCE_AGAINST_CIVILIANS:"عنف ضد المدنيين",
+ KIDNAPPING:"اختطاف واحتجاز رهائن",VIOLENT_UNREST:"شغب واضطرابات عنيفة",
+ ARMED_GROUPS:"جماعات مسلحة وميليشيات",FOREIGN_DIPLOMATIC_TARGET:"استهداف أجانب وبعثات دبلوماسية",
+ TRANSPORT_ACCESS_DISRUPTION:"تعطيل النقل وسبل الوصول",STATE_CONTROL_BREAKDOWN:"انقلاب وانهيار سيطرة الدولة",
+ OTHER_SERIOUS_THREAT:"تهديد مادي جسيم آخر"};
+const CAT=k=>LANG==="ar"?(CAT_AR[k]||k):((D.categories[k]&&D.categories[k].label)||k);
+
+const SHORT={
+ en:{ARMED_CONFLICT:"Battles",AIR_MISSILE_DRONE:"Air / missile",TERRORISM_IED:"Terror / IED",
+  VIOLENCE_AGAINST_CIVILIANS:"Civilians",KIDNAPPING:"Kidnap",VIOLENT_UNREST:"Unrest",
+  ARMED_GROUPS:"Armed groups",FOREIGN_DIPLOMATIC_TARGET:"Foreign / dipl.",
   TRANSPORT_ACCESS_DISRUPTION:"Transport",STATE_CONTROL_BREAKDOWN:"State control",
-  OTHER_SERIOUS_THREAT:"Other"};
+  OTHER_SERIOUS_THREAT:"Other"},
+ ar:{ARMED_CONFLICT:"اشتباكات",AIR_MISSILE_DRONE:"جوي/صاروخي",TERRORISM_IED:"إرهاب/عبوات",
+  VIOLENCE_AGAINST_CIVILIANS:"مدنيون",KIDNAPPING:"اختطاف",VIOLENT_UNREST:"اضطرابات",
+  ARMED_GROUPS:"جماعات مسلحة",FOREIGN_DIPLOMATIC_TARGET:"أجانب/دبلوماسي",
+  TRANSPORT_ACCESS_DISRUPTION:"النقل",STATE_CONTROL_BREAKDOWN:"سيطرة الدولة",
+  OTHER_SERIOUS_THREAT:"أخرى"}};
+
+const TREND=l=>({"SIGNIFICANT ESCALATION":T("tr_esc"),DETERIORATING:T("tr_det"),
+ STABLE:T("tr_sta"),IMPROVING:T("tr_imp"),"NO ACTIVITY":T("tr_na"),
+ "INSUFFICIENT HISTORY":T("tr_nc")}[l]||l);
+const VERIF_AR={VERIFIED_MULTI_SOURCE:"مُتحقَّق منه من مصادر متعددة",
+ VERIFIED_SINGLE_SOURCE:"مُتحقَّق منه من مصدر واحد",
+ INSUFFICIENT_EVENT_LEVEL_VERIFICATION:"تحقّق غير كافٍ على مستوى الحدث"};
+const VERIF=v=>LANG==="ar"?(VERIF_AR[v]||v):String(v).replace(/_/g," ");
+
+function applyStatic(){
+  document.documentElement.lang = LANG;
+  document.documentElement.dir  = LANG==="ar" ? "rtl" : "ltr";
+  document.title = LANG==="ar" ? "لوحة الأمن والخطر العالمية"
+                               : "Global Security & Danger Dashboard";
+  $$("[data-i18n]").forEach(el=>el.innerHTML=T(el.dataset.i18n));
+  $$("[data-i18n-ph]").forEach(el=>el.placeholder=T(el.dataset.i18nPh));
+}
+function setLang(l){
+  LANG=l; try{localStorage.setItem("gsd_lang",l)}catch(e){}
+  applyStatic(); renderStatus(); renderTable();
+  if(VIEW==="country") renderCountry();
+  if(VIEW==="map") renderMap();
+}
 
 let D=null, WIN="d30", VIEW="global", CUR_COUNTRY=null, MAP=null, LAYER=null;
 let SORT={key:"d30_incidents",dir:-1};
@@ -293,8 +509,7 @@ function bounds(win){
   return [{d7:d(6),d30:d(29),d90:d(89)}[win], D.meta.as_of];
 }
 const inWin=(dt,win)=>{const[a,b]=bounds(win);return dt&&dt>=a&&dt<=b};
-function label(win){return {d7:"last 7 days",d30:"last 30 days",d90:"last 90 days",
-  all:"full stored history"}[win]}
+function label(win){return {d7:T("lw7"),d30:T("lw30"),d90:T("lw90"),all:T("lwall")}[win]}
 
 /* Single source of truth: the table, the drill-down and the map all call this,
    so a displayed number and its underlying list can never disagree. */
@@ -320,18 +535,23 @@ const sevClass=n=>n===0?"zero":n<3?"sev1":n<8?"sev2":n<20?"sev3":"sev4";
 function renderStatus(){
   const m=D.meta, stale=m.latest_event_date && m.latest_event_date < bounds("d7")[0];
   $("#status").innerHTML=`
-    <div class="brand">Global Security &amp; Danger Dashboard <span>GDELT Cloud</span></div>
-    <div class="stat"><i>Last refresh</i><b>${esc((m.last_refresh||"").replace("T"," ").replace("+00:00"," UTC"))}</b></div>
-    <div class="stat ${stale?"warn":""}"><i>Latest event date</i><b>${esc(m.latest_event_date||"none")}</b></div>
-    <div class="stat"><i>Data coverage start</i><b>${esc(m.coverage_start)}</b></div>
-    <div class="stat"><i>Incidents in store</i><b class="num">${m.total_incidents.toLocaleString()}</b></div>
-    <div class="stat"><i>Raw GDELT events</i><b class="num">${m.total_raw_events.toLocaleString()}</b></div>
+    <div class="brand">${T("brand")} <span>GDELT Cloud</span></div>
+    <div class="stat"><i>${T("lastRefresh")}</i><b>${esc((m.last_refresh||"").replace("T"," ").replace("+00:00"," UTC"))}</b></div>
+    <div class="stat ${stale?"warn":""}"><i>${T("latestEventDate")}</i><b>${esc(m.latest_event_date||T("none"))}</b></div>
+    <div class="stat"><i>${T("coverageStart")}</i><b>${esc(m.coverage_start)}</b></div>
+    <div class="stat"><i>${T("incidentsStored")}</i><b class="num">${m.total_incidents.toLocaleString()}</b></div>
+    <div class="stat"><i>${T("rawEvents")}</i><b class="num">${m.total_raw_events.toLocaleString()}</b></div>
     <div class="spacer"></div>
+    <div class="langsel">
+      <button data-lang="ar" aria-pressed="${LANG==="ar"}">العربية</button>
+      <button data-lang="en" aria-pressed="${LANG==="en"}">EN</button>
+    </div>
     <div class="viewtabs">
-      <button data-view="global" aria-selected="true">Global</button>
-      <button data-view="country" aria-selected="false">Country</button>
-      <button data-view="map" aria-selected="false">Map</button>
+      <button data-view="global" aria-selected="true">${T("vGlobal")}</button>
+      <button data-view="country" aria-selected="false">${T("vCountry")}</button>
+      <button data-view="map" aria-selected="false">${T("vMap")}</button>
     </div>`;
+  $$("#status .langsel button").forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
   $$("#status .viewtabs button").forEach(b=>b.onclick=()=>{
     if(b.dataset.view==="country" && !CUR_COUNTRY){
       CUR_COUNTRY=(D.countries[0]||{}).country; }
@@ -347,13 +567,13 @@ function show(v){
 }
 
 /* ---------- global table ---------- */
-const HEAD=[
-  {k:"country",t:"Country",l:1,cls:"country"},
-  {k:"danger_status",t:"Danger status",l:1},
-  {k:"d7_incidents",t:"7d"},{k:"d30_incidents",t:"30d"},
-  {k:"prev30_incidents",t:"Prev 30d"},{k:"chg",t:"30d change"},
-  {k:"d90_incidents",t:"90d"},
-  {k:"d30_fatalities",t:"30d fatal."},{k:"d90_fatalities",t:"90d fatal."}
+const HEAD=()=>[
+  {k:"country",t:T("country"),l:1,cls:"country"},
+  {k:"danger_status",t:T("dangerStatus"),l:1},
+  {k:"d7_incidents",t:T("c7")},{k:"d30_incidents",t:T("c30")},
+  {k:"prev30_incidents",t:T("prev30")},{k:"chg",t:T("chg30")},
+  {k:"d90_incidents",t:T("c90")},
+  {k:"d30_fatalities",t:T("fat30")},{k:"d90_fatalities",t:T("fat90")}
 ];
 function renderTable(){
   const q=$("#q").value.trim(), reg=$("#f-region").value, cat=$("#f-cat").value,
@@ -375,15 +595,15 @@ function renderTable(){
   });
 
   $("#tbl thead").innerHTML=`<tr>
-    <th class="l country" colspan="2" style="text-align:left">Reporting basis: ${esc(label(WIN))}</th>
-    <th class="group" colspan="7">Rolling windows</th>
-    <th class="group" colspan="${COLS.length}">Security categories &mdash; counts are clickable and open the incidents behind them (${esc(label(WIN))})</th>
-    <th class="group" colspan="3">Currency</th></tr><tr>`+
-    HEAD.map(h=>`<th class="${h.l?"l ":""}${h.cls||""}" data-k="${h.k}"
+    <th class="l country" colspan="2" style="text-align:start">${T("basis")}: ${esc(label(WIN))}</th>
+    <th class="group" colspan="7">${T("rolling")}</th>
+    <th class="group" colspan="${COLS.length}">${T("secCats")} (${esc(label(WIN))})</th>
+    <th class="group" colspan="3">${T("currency")}</th></tr><tr>`+
+    HEAD().map(h=>`<th class="${h.l?"l ":""}${h.cls||""}" data-k="${h.k}"
       ${SORT.key===h.k?`aria-sort="${SORT.dir<0?"descending":"ascending"}"`:""}>${h.t}</th>`).join("")+
-    COLS.map(c=>`<th data-k="cat:${c}" ${SORT.key==="cat:"+c?`aria-sort="${SORT.dir<0?"descending":"ascending"}"`:""}>${esc(SHORT[c])}</th>`).join("")+
-    `<th class="l">Trend</th><th class="l">Last significant incident</th>
-     <th class="l">Latest event</th></tr>`;
+    COLS.map(c=>`<th data-k="cat:${c}" ${SORT.key==="cat:"+c?`aria-sort="${SORT.dir<0?"descending":"ascending"}"`:""}>${esc(SHORT[LANG][c])}</th>`).join("")+
+    `<th class="l">${T("trend")}</th><th class="l">${T("lastSig")}</th>
+     <th class="l">${T("latestEvent")}</th></tr>`;
 
   $("#tbl tbody").innerHTML = rows.length? rows.map(r=>{
     const counts=Object.fromEntries(COLS.map(c=>[c,select({country:r.country,category:c}).length]));
@@ -392,28 +612,28 @@ function renderTable(){
       <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(r.country)}</button></td>
       <td class="l"><span class="status-tag">${esc(r.danger_status)}</span></td>
       <td class="num">${r.d7_incidents}</td><td class="num">${r.d30_incidents}</td>
-      <td class="num">${r.prev30_covered?r.prev30_incidents:'<span class="badge est" title="This period has not been ingested yet. It is not zero events.">no coverage</span>'}</td>
+      <td class="num">${r.prev30_covered?r.prev30_incidents:`<span class="badge est" title="${T("noCovHint")}">${T("noCoverage")}</span>`}</td>
       <td class="num delta ${r.prev30_covered&&r.chg>0?"pos":r.prev30_covered&&r.chg<0?"neg":""}">${!r.prev30_covered?"&ndash;":r.chg===null?"&ndash;":(r.chg>0?"+":"")+Math.round(r.chg*100)+"%"}</td>
       <td class="num">${r.d90_incidents}</td>
       <td class="num">${r.d30_fatalities}</td><td class="num">${r.d90_fatalities}</td>`+
       COLS.map(c=>`<td class="num"><span class="cnt ${sevClass(counts[c])}"
         ${counts[c]?`data-drill="${esc(r.country)}|${c}" tabindex="0" role="button"
-        title="Open the ${counts[c]} incident(s) counted here"`:""}>${counts[c]}</span></td>`).join("")+
+        title="${T("openCount").replace('%',counts[c])}"`:""}>${counts[c]}</span></td>`).join("")+
       `<td class="l trend ${trCls(r.trend.label)}">${trLabel(r.trend)}</td>
        <td class="l">${ls?`<button class="linkbtn" data-inc="${esc(ls.incident_id)}">${esc((ls.title||"").slice(0,58))}</button>
-          <span class="badge">${esc(ls.date)}</span>`:'<span style="color:#b9c1c9">none in window</span>'}</td>
+          <span class="badge">${esc(ls.date)}</span>`:'<span style="color:#b9c1c9">${T("noneInWindow")}</span>'}</td>
        <td class="l">${esc(r.latest_event_date||"&ndash;")}</td></tr>`;
-  }).join("") : `<tr><td colspan="24" class="empty">No countries match these filters.</td></tr>`;
+  }).join("") : `<tr><td colspan="24" class="empty">${T("noCountries")}</td></tr>`;
 
-  $("#rowcount").textContent=`${rows.length} countries \u00b7 ${D.meta.total_incidents} incidents in store`;
+  $("#rowcount").textContent=`${rows.length} ${T("countriesWord")} \u00b7 ${D.meta.total_incidents} ${T("incidentsWord")}`;
   wire();
 }
 const trCls=l=>l==="SIGNIFICANT ESCALATION"?"t-esc":l==="DETERIORATING"?"t-up":l==="IMPROVING"?"t-down":"t-flat";
 const NOCOV="INSUFFICIENT HISTORY";
 function trLabel(t){
   const pct=t.severity_change_pct;
-  if(t.label===NOCOV) return `<span class="badge est" title="${esc(t.basis||"")}">insufficient history</span>`;
-  return `<span class="${trCls(t.label)}">${esc(t.label)}</span>`+
+  if(t.label===NOCOV) return `<span class="badge est" title="${esc(t.basis||"")}">${T("tr_nc")}</span>`;
+  return `<span class="${trCls(t.label)}">${esc(TREND(t.label))}</span>`+
     (pct!=null?` <span style="color:var(--muted);font-weight:400">${pct>0?"+":""}${pct}%</span>`:"");
 }
 function regionOf(c){const i=D.incidents.find(x=>x.country===c);return (i&&i.region)||REGION[c]||"Other";}
@@ -443,14 +663,11 @@ function drillCategory(country,cat){
   const list=select({country,category:cat});
   const [a,b]=bounds(WIN);
   openPanel({
-    trail:[`World`,country,D.categories[cat].label],
-    title:`${country} &mdash; ${esc(D.categories[cat].label)}`,
-    audit:`These are the exact <b>${list.length}</b> incident(s) that produce the figure shown in the
-      table. Basis: security category <b>${esc(cat)}</b>, event date between <b>${a}</b> and
-      <b>${b}</b> (${esc(label(WIN))}), country <b>${esc(country)}</b>. Changing the window in the
-      toolbar changes both the count and this list together.`,
+    trail:[T("world"),country,CAT(cat)],
+    title:`${esc(country)} &mdash; ${esc(CAT(cat))}`,
+    audit:T("auditCat")(list.length,esc(CAT(cat)),a,b,esc(label(WIN)),esc(country)),
     body: list.length? list.map(incCard).join("")
-      : `<div class="empty">No incidents in this cell for the selected window.</div>`
+      : `<div class="empty">${T("noneCell")}</div>`
   });
   $$("#pBody .inc").forEach(el=>el.onclick=()=>openIncident(
     D.incidents.find(i=>i.incident_id===el.dataset.id)));
@@ -458,17 +675,17 @@ function drillCategory(country,cat){
 function incCard(i){
   const merged=i.event_count>1, unver=i.verification_status!=="VERIFIED_MULTI_SOURCE";
   return `<div class="inc" data-id="${esc(i.incident_id)}" tabindex="0">
-    <h3>${esc(i.title||"Untitled incident")}</h3>
+    <h3 class="en">${esc(i.title||T("untitled"))}</h3>
     <div class="meta">
       <span class="badge">${esc(i.event_date)}</span>
       <span class="badge">${esc(i.location||i.admin1||i.country)}</span>
-      ${i.fatalities?`<span class="badge fat">${i.fatalities} killed${i.fatalities_disputed?" (disputed)":""}</span>`:""}
-      ${merged?`<span class="badge merged">${i.event_count} GDELT records merged</span>`:""}
+      ${i.fatalities?`<span class="badge fat">${i.fatalities} ${T("killed")}${i.fatalities_disputed?" "+T("disputedShort"):""}</span>`:""}
+      ${merged?`<span class="badge merged">${T("mergedN").replace("%",i.event_count)}</span>`:""}
       ${unver?`<span class="badge unver">${esc(i.verification_status.replace(/_/g," ").toLowerCase())}</span>`:""}
-      ${i.impact_realised?"":`<span class="badge est">intercepted / no impact</span>`}
-      ${i.geo_precision===3?`<span class="badge est">geography unresolved</span>`:""}
+      ${i.impact_realised?"":`<span class="badge est">${T("intercepted")}</span>`}
+      ${i.geo_precision===3?`<span class="badge est">${T("geoUnres")}</span>`:""}
     </div>
-    <div class="sum">${esc(i.summary||"")}</div></div>`;
+    <div class="sum en">${esc(i.summary||"")}</div></div>`;
 }
 
 /* ---------- drill-down: incident detail ---------- */
@@ -478,61 +695,59 @@ function openIncident(i){
   const acts=(i.actors||[]).map(a=>esc(a.name)+(a.country?` <span style="color:var(--muted)">(${esc(a.country)})</span>`:"")).join(", ");
   const geoTxt = i.latitude!=null && i.geo_precision!==3
     ? `${i.latitude.toFixed(4)}, ${i.longitude.toFixed(4)} <span class="badge">${esc(i.geo_precision_label)}</span>`
-    : `<span class="badge est">no usable coordinates &mdash; ${esc(i.geo_precision_label||"unknown precision")}</span>`;
+    : `<span class="badge est">${T("noCoords")} &mdash; ${esc(i.geo_precision_label||T("unknownPrec"))}</span>`;
   openPanel({
-    trail:["World",i.country,D.categories[i.security_category].label,"Incident"],
-    title:esc(i.title||"Incident"),
-    audit:`Incident <b>${esc(i.incident_id)}</b> consolidates <b>${i.event_count}</b> GDELT event record(s).
-      Every figure below is stored, not derived at display time.`,
+    trail:[T("world"),i.country,CAT(i.security_category),T("incident")],
+    title:`<span class="en">${esc(i.title||T("incident"))}</span>`,
+    audit:T("auditInc")(esc(i.incident_id),i.event_count),
     body:`
       <dl class="kv">
-        <dt>Date</dt><dd>${esc(i.event_date)}</dd>
-        <dt>Country</dt><dd>${esc(i.country)}</dd>
-        <dt>Admin region</dt><dd>${esc(i.admin1||"not reported")}</dd>
-        <dt>Place</dt><dd>${esc(i.location||"not reported")}</dd>
-        <dt>Coordinates</dt><dd>${geoTxt}</dd>
-        <dt>Security category</dt><dd><b>${esc(D.categories[i.security_category].label)}</b></dd>
-        <dt>Security subtype</dt><dd>${esc(i.security_subtype||"not assigned")}</dd>
-        <dt>Overlay flags</dt><dd>${(i.overlay_categories||[]).length?
-          i.overlay_categories.map(o=>`<span class="badge">${esc(D.categories[o]?D.categories[o].label:o)}</span>`).join(" "):"none"}</dd>
-        <dt>Native GDELT category</dt><dd>${esc(i.native_category)} &rsaquo; ${esc(i.native_subcategory||"")}</dd>
-        ${i.category_disputed?`<dt>Category dispute</dt><dd><span class="badge unver">merged records coded differently: ${i.merged_categories.map(esc).join(", ")}</span></dd>`:""}
-        <dt>Actors</dt><dd>${acts||"not reported"}</dd>
-        <dt>Organizations</dt><dd>${(i.organizations||[]).map(esc).join(", ")||"none linked"}</dd>
-        <dt>Reported fatalities</dt><dd>${i.fatalities??"not reported"}${
-          i.fatalities_disputed?` <span class="badge unver">sources differ: ${i.fatalities_reported_range.join(" to ")}</span>`:""}</dd>
-        <dt>Goldstein scale</dt><dd>${i.goldstein_scale??"not scored"}</dd>
-        <dt>Significance</dt><dd>${i.significance??"not scored"}</dd>
-        <dt>GDELT confidence</dt><dd>${i.confidence??"not scored"}</dd>
-        <dt>Verification</dt><dd>${esc(i.verification_status.replace(/_/g," "))}</dd>
-        <dt>Impact realised</dt><dd>${i.impact_realised?"yes":"no &mdash; weapon intercepted or disrupted"}</dd>
-        <dt>Corroborating articles</dt><dd>${i.article_count??0}</dd>
+        <dt>${T("date")}</dt><dd>${esc(i.event_date)}</dd>
+        <dt>${T("country")}</dt><dd>${esc(i.country)}</dd>
+        <dt>${T("adminRegion")}</dt><dd>${esc(i.admin1||"not reported")}</dd>
+        <dt>${T("place")}</dt><dd>${esc(i.location||"not reported")}</dd>
+        <dt>${T("coords")}</dt><dd>${geoTxt}</dd>
+        <dt>${T("secCat")}</dt><dd><b>${esc(CAT(i.security_category))}</b></dd>
+        <dt>${T("secSub")}</dt><dd class="en">${esc(i.security_subtype||T("notAssigned"))}</dd>
+        <dt>${T("overlays")}</dt><dd>${(i.overlay_categories||[]).length?
+          i.overlay_categories.map(o=>`<span class="badge">${esc(CAT(o))}</span>`).join(" "):T("none")}</dd>
+        <dt>${T("nativeCat")}</dt><dd class="en">${esc(i.native_category)} &rsaquo; ${esc(i.native_subcategory||"")}</dd>
+        ${i.category_disputed?`<dt>${T("catDispute")}</dt><dd><span class="badge unver">${T("codedDiff")}: <span class="en">${i.merged_categories.map(esc).join(", ")}</span></span></dd>`:""}
+        <dt>${T("actors")}</dt><dd class="en">${acts||T("notReported")}</dd>
+        <dt>${T("orgs")}</dt><dd class="en">${(i.organizations||[]).map(esc).join(", ")||T("noneLinked")}</dd>
+        <dt>${T("fatalities")}</dt><dd>${i.fatalities??T("notReported")}${
+          i.fatalities_disputed?` <span class="badge unver">${T("sourcesDiffer")}: ${i.fatalities_reported_range.join(" – ")}</span>`:""}</dd>
+        <dt>${T("goldstein")}</dt><dd>${i.goldstein_scale??T("notScored")}</dd>
+        <dt>${T("significance")}</dt><dd>${i.significance??T("notScored")}</dd>
+        <dt>${T("gdeltConf")}</dt><dd>${i.confidence??T("notScored")}</dd>
+        <dt>${T("verification")}</dt><dd>${esc(VERIF(i.verification_status))}</dd>
+        <dt>${T("impact")}</dt><dd>${i.impact_realised?T("yes"):T("noIntercept")}</dd>
+        <dt>${T("corrob")}</dt><dd>${i.article_count??0}</dd>
       </dl>
       <div id="incmap" style="height:190px;border:1px solid var(--rule-2);${i.latitude==null||i.geo_precision===3?"display:none":""}"></div>
-      <h4 class="sec">Summary as coded</h4>
-      <p style="font-size:12.5px;margin:0;color:var(--ink-2)">${esc(i.summary||"No summary available.")}</p>
+      <h4 class="sec">${T("summaryCoded")}</h4>
+      <p style="font-size:12.5px;margin:0;color:var(--ink-2)">${esc(i.summary||T("noSummary"))}</p>
 
-      <h4 class="sec">Contributing GDELT event records (${i.event_count})</h4>
+      <h4 class="sec">${T("contribRecords")} (${i.event_count})</h4>
       <ul class="srcs">${i.event_ids.map(e=>`<li><span class="dom">${esc(e)}</span></li>`).join("")}</ul>
 
-      <h4 class="sec">GDELT Cloud stories</h4>
+      <h4 class="sec">${T("stories")}</h4>
       <ul class="srcs">${(i.story_urls||[]).length? i.story_urls.map(u=>
         `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a></li>`).join("")
-        : "<li>No story URL on these records.</li>"}</ul>
+        : `<li>${T("noStory")}</li>`}</ul>
 
-      <h4 class="sec">Original source articles (${(i.sources||[]).length})</h4>
+      <h4 class="sec">${T("sourceArticles")} (${(i.sources||[]).length})</h4>
       <ul class="srcs">${(i.sources||[]).map(s=>`<li>
         <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a><br>
-        <span class="dom">${esc(s.domain||"")} &mdash; via ${esc(s.via_event_id)}</span></li>`).join("")
-        || "<li>No source articles attached.</li>"}</ul>
+        <span class="dom">${esc(s.domain||"")} &mdash; ${T("via")} ${esc(s.via_event_id)}</span></li>`).join("")
+        || `<li>${T("noSources")}</li>`}</ul>
 
-      <h4 class="sec">Deduplication</h4>
-      <dl class="kv"><dt>Method</dt><dd>${esc(i.dedup_method)}</dd>
-      <dt>Confidence</dt><dd>${i.dedup_confidence}</dd></dl>
+      <h4 class="sec">${T("dedup")}</h4>
+      <dl class="kv"><dt>${T("method")}</dt><dd class="en">${esc(i.dedup_method)}</dd>
+      <dt>${T("confidence")}</dt><dd>${i.dedup_confidence}</dd></dl>
       ${ev.length?`<div class="evbox">${esc(JSON.stringify(ev,null,1))}</div>`:
-        `<p class="note">Single record; no consolidation was applied.</p>`}
-      <p class="note">Raw GDELT records are retained unchanged in <code>raw_events</code>. Consolidation
-      creates a new incident row and never overwrites or deletes the originals.</p>`
+        `<p class="note">${T("singleRecord")}</p>`}
+      <p class="note">${T("rawNote")}</p>`
   });
   if(i.latitude!=null && i.geo_precision!==3){
     setTimeout(()=>{
@@ -548,7 +763,7 @@ function openIncident(i){
 function openPanel({trail,title,audit,body}){
   $("#pTrail").innerHTML=trail.map((t,n)=>
     `${n?'<span class="sep">&rsaquo;</span>':""}<b>${esc(t)}</b>`).join(" ")+
-    ` <span class="sep">&rsaquo;</span> GDELT event <span class="sep">&rsaquo;</span> source article`;
+    ` <span class="sep">&rsaquo;</span> ${T("gdeltEvent")} <span class="sep">&rsaquo;</span> ${T("sourceArticle")}`;
   $("#pTitle").innerHTML=title;
   $("#pBody").innerHTML=(audit?`<div class="audit">${audit}</div>`:"")+body;
   $("#panel").classList.add("on"); $("#scrim").classList.add("on");
@@ -561,23 +776,23 @@ addEventListener("keydown",e=>{if(e.key==="Escape")closePanel()});
 /* ---------- country view ---------- */
 function renderCountry(){
   const c=CUR_COUNTRY, row=D.countries.find(r=>r.country===c);
-  if(!row){$("#cName").textContent="No country selected";return}
+  if(!row){$("#cName").textContent=T("noCountrySel");return}
   $("#cName").textContent=c;
   $("#cStatus").textContent=row.danger_status;
   $("#cTrend").innerHTML=trLabel(row.trend);
 
   const cats=[...new Set(D.incidents.filter(i=>i.country===c).map(i=>i.security_category))];
-  $("#cCat").innerHTML=`<option value="">All categories</option>`+
-    cats.map(k=>`<option value="${k}">${esc(D.categories[k].label)}</option>`).join("");
-  $("#cCity").innerHTML=`<option value="">— select a city —</option>`+
+  $("#cCat").innerHTML=`<option value="">${T("allCats")}</option>`+
+    cats.map(k=>`<option value="${k}">${esc(CAT(k))}</option>`).join("");
+  $("#cCity").innerHTML=`<option value="">${T("selectCity")}</option>`+
     (CITIES[c]||[]).map(x=>`<option value="${x.n}">${esc(x.n)}</option>`).join("");
 
   $("#cStats").innerHTML=[
-    ["7 days",row.d7_incidents],["30 days",row.d30_incidents],
-    ["Previous 30 days",row.prev30_incidents],["90 days",row.d90_incidents],
-    ["30d fatalities",row.d30_fatalities],["90d fatalities",row.d90_fatalities],
-    ["Exact geography",row.geo_quality.exact_pct+"%"],
-    ["Latest event",row.latest_event_date||"—"]
+    [T("w7"),row.d7_incidents],[T("w30"),row.d30_incidents],
+    [T("prev30full"),row.prev30_covered?row.prev30_incidents:T("noCoverage")],[T("w90"),row.d90_incidents],
+    [T("fat30full"),row.d30_fatalities],[T("fat90full"),row.d90_fatalities],
+    [T("exactGeo"),row.geo_quality.exact_pct+"%"],
+    [T("latestEvent"),row.latest_event_date||"—"]
   ].map(([l,v])=>`<div><b class="num">${v}</b><i>${l}</i></div>`).join("");
 
   const sel=$("#cCat").value;
@@ -585,14 +800,14 @@ function renderCountry(){
   const max=Math.max(1,...COLS.map(k=>select({country:c,category:k}).length));
   $("#cBars").innerHTML=COLS.map(k=>{
     const n=select({country:c,category:k}).length;
-    return n?`<div class="bar"><span class="lab">${esc(D.categories[k].label)}</span>
+    return n?`<div class="bar"><span class="lab">${esc(CAT(k))}</span>
       <span class="track"><span class="fill" style="width:${100*n/max}%"></span></span>
       <span class="n"><span class="cnt" data-drill="${esc(c)}|${k}" tabindex="0" role="button">${n}</span></span></div>`:"";
-  }).join("")||`<p class="note">No categorised incidents for this country in ${esc(label(WIN))}.</p>`;
+  }).join("")||`<p class="note">${T("noCatInc")} ${esc(label(WIN))}.</p>`;
 
   $("#cList").innerHTML=items.length?items.map(incCard).join(""):
-    `<div class="empty">No incidents for these filters.</div>`;
-  $("#cCount").textContent=`${items.length} incidents \u00b7 ${label(WIN)}`;
+    `<div class="empty">${T("noIncFilters")}</div>`;
+  $("#cCount").textContent=`${items.length} ${T("incidentsWord2")} \u00b7 ${label(WIN)}`;
   renderProx();
   $$("#v-country .inc").forEach(el=>el.onclick=()=>openIncident(
     D.incidents.find(i=>i.incident_id===el.dataset.id)));
@@ -609,33 +824,30 @@ function renderProx(){
   if(!city){$("#cProx").innerHTML="";return}
   const ref=(CITIES[c]||[]).find(x=>x.n===city);
   const items=select({country:c});
-  const bands={"Inside city (under 8 km)":[],"Approximately 0–25 km":[],
-    "Approximately 25–100 km":[],"Elsewhere in country":[],"Geography unresolved":[]};
+  const B=[T("bInside"),T("b025"),T("b25100"),T("bElse"),T("bUnres")];
+  const bands={[B[0]]:[],[B[1]]:[],[B[2]]:[],[B[3]]:[],[B[4]]:[]};
   items.forEach(i=>{
-    if(i.latitude==null||i.geo_precision===3){bands["Geography unresolved"].push(i);return}
+    if(i.latitude==null||i.geo_precision===3){bands[B[4]].push(i);return}
     const d=km(ref.lat,ref.lon,i.latitude,i.longitude);
-    if(d<8)bands["Inside city (under 8 km)"].push(i);
-    else if(d<25)bands["Approximately 0–25 km"].push(i);
-    else if(d<100)bands["Approximately 25–100 km"].push(i);
-    else bands["Elsewhere in country"].push(i);
+    if(d<8)bands[B[0]].push(i);
+    else if(d<25)bands[B[1]].push(i);
+    else if(d<100)bands[B[2]].push(i);
+    else bands[B[3]].push(i);
   });
   $("#cProx").innerHTML=`<div class="prox">
-    <div class="head"><span>Proximity to ${esc(city)} &mdash; ${esc(label(WIN))}</span>
-      <span>${items.length} incidents</span></div>
-    ${Object.entries(bands).map(([k,v])=>`<div class="row ${k.startsWith("Geo")?"unres":""}"
+    <div class="head"><span>${T("proximityTo")} ${esc(city)} &mdash; ${esc(label(WIN))}</span>
+      <span>${items.length} ${T("incidentsWord2")}</span></div>
+    ${Object.entries(bands).map(([k,v])=>`<div class="row ${k===B[4]?"unres":""}"
       data-band="${esc(k)}"><span>${esc(k)}</span>
-      <span class="num"><b>${v.length}</b>${v.length?` &nbsp;<span style="color:var(--muted)">${v.reduce((s,i)=>s+(i.fatalities||0),0)} killed</span>`:""}</span></div>`).join("")}
+      <span class="num"><b>${v.length}</b>${v.length?` &nbsp;<span style="color:var(--muted)">${v.reduce((s,i)=>s+(i.fatalities||0),0)} ${T("killed")}</span>`:""}</span></div>`).join("")}
     </div>
-    <p class="note">Incidents coded at country or region centroid precision are listed as
-    <em>geography unresolved</em> and are never counted as near ${esc(city)}. Danger elsewhere in a
-    large country is not treated as danger at this location.</p>`;
+<p class="note">${T("proxNote").replace(/%/g,esc(city))}</p>`;
   $$("#cProx .row").forEach(el=>el.onclick=()=>{
     const list=bands[el.dataset.band];
-    openPanel({trail:["World",c,el.dataset.band],
+    openPanel({trail:[T("world"),c,el.dataset.band],
       title:`${esc(city)} &mdash; ${esc(el.dataset.band)}`,
-      audit:`<b>${list.length}</b> incident(s), measured from ${esc(city)} using each incident's own
-        stored coordinates. Basis: ${esc(label(WIN))}.`,
-      body:list.length?list.map(incCard).join(""):`<div class="empty">None in this band.</div>`});
+      audit:T("auditProx")(list.length,esc(city),esc(label(WIN))),
+      body:list.length?list.map(incCard).join(""):`<div class="empty">${T("noneBand")}</div>`});
     $$("#pBody .inc").forEach(x=>x.onclick=()=>openIncident(
       D.incidents.find(i=>i.incident_id===x.dataset.id)));
   });
@@ -661,17 +873,17 @@ function renderMap(){
     const f=i.fatalities||0, r=Math.min(20,5+Math.sqrt(f)*1.9);
     L.circleMarker([i.latitude,i.longitude],{radius:r,weight:1.5,color:"#7d241a",
       fillColor:f>=10?"#8d2020":f>0?"#c04f2c":"#dd8434",fillOpacity:.62})
-      .bindPopup(`<h3>${esc(i.title||"")}</h3>
+      .bindPopup(`<h3 class="en">${esc(i.title||"")}</h3>
         <div>${esc(i.event_date)} &middot; ${esc(i.location||i.admin1||i.country)}</div>
-        <div><b>${esc(D.categories[i.security_category].label)}</b>${i.security_subtype?" &middot; "+esc(i.security_subtype):""}</div>
-        <div>${(i.actors||[]).map(a=>esc(a.name)).join(" vs ")||"actors not reported"}</div>
-        <div>${f} reported killed</div>
+        <div><b>${esc(CAT(i.security_category))}</b>${i.security_subtype?" &middot; "+esc(i.security_subtype):""}</div>
+        <div>${(i.actors||[]).map(a=>esc(a.name)).join(" / ")||T("actorsNR")}</div>
+        <div>${f} ${T("killed")}</div>
         ${(i.sources||[])[0]?`<div><a href="${esc(i.sources[0].url)}" target="_blank" rel="noopener">${esc(i.sources[0].domain)}</a></div>`:""}
-        <div style="margin-top:5px"><a href="#" data-pop="${esc(i.incident_id)}">Open full incident record</a></div>`)
+        <div style="margin-top:5px"><a href="#" data-pop="${esc(i.incident_id)}">${T("openFull")}</a></div>`)
       .addTo(LAYER);
   });
-  $("#m-count").innerHTML=`${plotted} plotted`+
-    (skipped?` &middot; <span style="color:var(--up)">${skipped} withheld: no exact coordinates</span>`:"");
+  $("#m-count").innerHTML=`${plotted} ${T("plotted")}`+
+    (skipped?` &middot; <span style="color:var(--up)">${skipped} ${T("withheld")}</span>`:"");
   MAP.off("popupopen").on("popupopen",e=>{
     const a=e.popup.getElement().querySelector("[data-pop]");
     if(a) a.onclick=ev=>{ev.preventDefault();
@@ -684,16 +896,16 @@ function fillSelect(el,vals,all){el.innerHTML=`<option value="">${all}</option>`
   vals.map(v=>`<option value="${esc(v.v)}">${esc(v.t)}</option>`).join("")}
 function boot(data){
   D=data;
-  D.incidents.forEach(i=>{const r=D.countries.find(c=>c.country===i.country);});
+  applyStatic();
   renderStatus();
   const regions=[...new Set(D.incidents.map(i=>i.region).filter(Boolean))].sort();
   D.incidents.forEach(i=>{if(i.region)REGION[i.country]=i.region});
-  fillSelect($("#f-region"),regions.map(r=>({v:r,t:r})),"All regions");
-  const catOpts=COLS.filter(c=>D.categories[c]).map(c=>({v:c,t:D.categories[c].label}));
-  fillSelect($("#f-cat"),catOpts,"All categories");
-  fillSelect($("#m-cat"),catOpts,"All categories");
-  fillSelect($("#m-country"),D.countries.map(c=>({v:c.country,t:c.country})),"All countries");
-  fillSelect($("#f-status"),[...new Set(D.countries.map(c=>c.danger_status))].map(s=>({v:s,t:s})),"All");
+  fillSelect($("#f-region"),regions.map(r=>({v:r,t:r})),T("allRegions"));
+  const catOpts=COLS.filter(c=>D.categories[c]).map(c=>({v:c,t:CAT(c)}));
+  fillSelect($("#f-cat"),catOpts,T("allCats"));
+  fillSelect($("#m-cat"),catOpts,T("allCats"));
+  fillSelect($("#m-country"),D.countries.map(c=>({v:c.country,t:c.country})),T("allCountriesOpt"));
+  fillSelect($("#f-status"),[...new Set(D.countries.map(c=>c.danger_status))].map(s=>({v:s,t:s})),T("all"));
   ["#q","#f-region","#f-cat","#f-trend","#f-status"].forEach(s=>{
     $(s).addEventListener("input",renderTable)});
   $$(".winsel button").forEach(b=>b.onclick=()=>{
@@ -710,8 +922,8 @@ function boot(data){
   if(INLINE_DATA) return boot(INLINE_DATA);
   try{ boot(await (await fetch("data.json")).json()); }
   catch(e){ document.body.innerHTML=
-    `<div class="empty">Could not load <code>data.json</code>.<br>
-     Run <code>python -m pipeline.run_pipeline --seed</code> first, then serve this folder.</div>`; }
+    `<div class="empty">${T("loadFail")}<br>
+     <code>python -m pipeline.run_pipeline --seed</code></div>`; }
 })();
 </script>
 </body>
