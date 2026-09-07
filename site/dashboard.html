@@ -482,6 +482,77 @@ const VERIF_AR={VERIFIED_MULTI_SOURCE:"مُتحقَّق منه من مصادر �
  INSUFFICIENT_EVENT_LEVEL_VERIFICATION:"تحقّق غير كافٍ على مستوى الحدث"};
 const VERIF=v=>LANG==="ar"?(VERIF_AR[v]||v):String(v).replace(/_/g," ");
 
+/* GDELT's 19 region buckets, verified against a live group_by=region call
+   rather than guessed, so no bucket falls through untranslated. */
+const AR_REGION={"Europe":"أوروبا","Eastern Europe":"أوروبا الشرقية","North America":"أمريكا الشمالية",
+ "South America":"أمريكا الجنوبية","Central America":"أمريكا الوسطى","Caribbean":"البحر الكاريبي",
+ "Middle East":"الشرق الأوسط","South Asia":"جنوب آسيا","East Asia":"شرق آسيا",
+ "Southeast Asia":"جنوب شرق آسيا","Central Asia":"آسيا الوسطى","Asia":"آسيا",
+ "Northern Africa":"شمال أفريقيا","Western Africa":"غرب أفريقيا","Eastern Africa":"شرق أفريقيا",
+ "Middle Africa":"وسط أفريقيا","Southern Africa":"الجنوب الأفريقي","Africa":"أفريقيا",
+ "Oceania":"أوقيانوسيا"};
+const REG=r=>LANG==="ar"?(AR_REGION[r]||r):r;
+
+/* Country names. GDELT emits a controlled English short-name list, so these are
+   lookups on a fixed vocabulary rather than translation of free text. Anything
+   unmapped falls back to the English name and is reported once in the console,
+   so a gap is visible rather than silent. */
+const AR_COUNTRY={
+"Afghanistan":"أفغانستان","Albania":"ألبانيا","Algeria":"الجزائر","Andorra":"أندورا","Angola":"أنغولا",
+"Antigua and Barbuda":"أنتيغوا وبربودا","Argentina":"الأرجنتين","Armenia":"أرمينيا","Australia":"أستراليا",
+"Austria":"النمسا","Azerbaijan":"أذربيجان","Bahamas":"الباهاما","Bahrain":"البحرين","Bangladesh":"بنغلاديش",
+"Barbados":"بربادوس","Belarus":"بيلاروسيا","Belgium":"بلجيكا","Belize":"بليز","Benin":"بنين","Bhutan":"بوتان",
+"Bolivia":"بوليفيا","Bosnia and Herzegovina":"البوسنة والهرسك","Botswana":"بوتسوانا","Brazil":"البرازيل",
+"Brunei":"بروناي","Bulgaria":"بلغاريا","Burkina Faso":"بوركينا فاسو","Burundi":"بوروندي","Cambodia":"كمبوديا",
+"Cameroon":"الكاميرون","Canada":"كندا","Cape Verde":"الرأس الأخضر","Central African Republic":"جمهورية أفريقيا الوسطى",
+"Chad":"تشاد","Chile":"تشيلي","China":"الصين","Colombia":"كولومبيا","Comoros":"جزر القمر",
+"Democratic Republic of the Congo":"جمهورية الكونغو الديمقراطية","Republic of the Congo":"جمهورية الكونغو",
+"Congo":"الكونغو","Costa Rica":"كوستاريكا","Croatia":"كرواتيا","Cuba":"كوبا","Cyprus":"قبرص",
+"Czech Republic":"التشيك","Czechia":"التشيك","Denmark":"الدنمارك","Djibouti":"جيبوتي","Dominica":"دومينيكا",
+"Dominican Republic":"جمهورية الدومينيكان","Ecuador":"الإكوادور","Egypt":"مصر","El Salvador":"السلفادور",
+"Equatorial Guinea":"غينيا الاستوائية","Eritrea":"إريتريا","Estonia":"إستونيا","Eswatini":"إسواتيني",
+"Ethiopia":"إثيوبيا","Fiji":"فيجي","Finland":"فنلندا","France":"فرنسا","Gabon":"الغابون","Gambia":"غامبيا",
+"Georgia":"جورجيا","Germany":"ألمانيا","Ghana":"غانا","Greece":"اليونان","Grenada":"غرينادا",
+"Guatemala":"غواتيمالا","Guinea":"غينيا","Guinea-Bissau":"غينيا بيساو","Guyana":"غيانا","Haiti":"هايتي",
+"Honduras":"هندوراس","Hong Kong":"هونغ كونغ","Hungary":"المجر","Iceland":"آيسلندا","India":"الهند",
+"Indonesia":"إندونيسيا","Iran":"إيران","Iraq":"العراق","Ireland":"إيرلندا","Israel":"إسرائيل","Italy":"إيطاليا",
+"Ivory Coast":"ساحل العاج","Côte d'Ivoire":"ساحل العاج","Jamaica":"جامايكا","Japan":"اليابان","Jordan":"الأردن",
+"Kazakhstan":"كازاخستان","Kenya":"كينيا","Kiribati":"كيريباتي","Kosovo":"كوسوفو","Kuwait":"الكويت",
+"Kyrgyzstan":"قيرغيزستان","Laos":"لاوس","Latvia":"لاتفيا","Lebanon":"لبنان","Lesotho":"ليسوتو",
+"Liberia":"ليبيريا","Libya":"ليبيا","Liechtenstein":"ليختنشتاين","Lithuania":"ليتوانيا","Luxembourg":"لوكسمبورغ",
+"Madagascar":"مدغشقر","Malawi":"مالاوي","Malaysia":"ماليزيا","Maldives":"المالديف","Mali":"مالي",
+"Malta":"مالطا","Marshall Islands":"جزر مارشال","Mauritania":"موريتانيا","Mauritius":"موريشيوس",
+"Mexico":"المكسيك","Micronesia":"ميكرونيزيا","Moldova":"مولدوفا","Monaco":"موناكو","Mongolia":"منغوليا",
+"Montenegro":"الجبل الأسود","Morocco":"المغرب","Mozambique":"موزمبيق","Myanmar":"ميانمار","Burma":"ميانمار",
+"Namibia":"ناميبيا","Nauru":"ناورو","Nepal":"نيبال","Netherlands":"هولندا","New Zealand":"نيوزيلندا",
+"Nicaragua":"نيكاراغوا","Niger":"النيجر","Nigeria":"نيجيريا","North Korea":"كوريا الشمالية",
+"North Macedonia":"مقدونيا الشمالية","Macedonia":"مقدونيا الشمالية","Norway":"النرويج","Oman":"عُمان",
+"Pakistan":"باكستان","Palau":"بالاو","Palestine":"فلسطين","Panama":"بنما","Papua New Guinea":"بابوا غينيا الجديدة",
+"Paraguay":"باراغواي","Peru":"بيرو","Philippines":"الفلبين","Poland":"بولندا","Portugal":"البرتغال",
+"Puerto Rico":"بورتوريكو","Qatar":"قطر","Romania":"رومانيا","Russia":"روسيا","Rwanda":"رواندا",
+"Saint Kitts and Nevis":"سانت كيتس ونيفيس","Saint Lucia":"سانت لوسيا",
+"Saint Vincent and the Grenadines":"سانت فنسنت وجزر غرينادين","Samoa":"ساموا","San Marino":"سان مارينو",
+"Sao Tome and Principe":"ساو تومي وبرينسيبي","Saudi Arabia":"السعودية","Senegal":"السنغال","Serbia":"صربيا",
+"Seychelles":"سيشل","Sierra Leone":"سيراليون","Singapore":"سنغافورة","Slovakia":"سلوفاكيا",
+"Slovenia":"سلوفينيا","Solomon Islands":"جزر سليمان","Somalia":"الصومال","South Africa":"جنوب أفريقيا",
+"South Korea":"كوريا الجنوبية","South Sudan":"جنوب السودان","Spain":"إسبانيا","Sri Lanka":"سريلانكا",
+"Sudan":"السودان","Suriname":"سورينام","Sweden":"السويد","Switzerland":"سويسرا","Syria":"سوريا",
+"Taiwan":"تايوان","Tajikistan":"طاجيكستان","Tanzania":"تنزانيا","Thailand":"تايلاند","Timor-Leste":"تيمور الشرقية",
+"East Timor":"تيمور الشرقية","Togo":"توغو","Tonga":"تونغا","Trinidad and Tobago":"ترينيداد وتوباغو",
+"Tunisia":"تونس","Turkey":"تركيا","Türkiye":"تركيا","Turkmenistan":"تركمانستان","Tuvalu":"توفالو",
+"Uganda":"أوغندا","Ukraine":"أوكرانيا","United Arab Emirates":"الإمارات العربية المتحدة",
+"United Kingdom":"المملكة المتحدة","United States":"الولايات المتحدة","Uruguay":"أوروغواي",
+"Uzbekistan":"أوزبكستان","Vanuatu":"فانواتو","Vatican City":"الفاتيكان","Venezuela":"فنزويلا",
+"Vietnam":"فيتنام","Western Sahara":"الصحراء الغربية","Yemen":"اليمن","Zambia":"زامبيا","Zimbabwe":"زيمبابوي"};
+const _unmapped=new Set();
+const CTRY=c=>{
+  if(LANG!=="ar") return c;
+  if(AR_COUNTRY[c]) return AR_COUNTRY[c];
+  if(c && !_unmapped.has(c)){ _unmapped.add(c);
+    console.warn("[i18n] no Arabic name for country:",c,"— showing English"); }
+  return c;
+};
+
 function applyStatic(){
   document.documentElement.lang = LANG;
   document.documentElement.dir  = LANG==="ar" ? "rtl" : "ltr";
@@ -583,15 +654,15 @@ function renderTable(){
   if(tr) rows=rows.filter(r=>r.trend.label===tr);
   if(st) rows=rows.filter(r=>r.danger_status===st);
   if(cat) rows=rows.filter(r=>select({country:r.country,category:cat}).length>0);
-  if(q) rows=rows.filter(r=>r.country.toLowerCase().includes(q.toLowerCase())
+  if(q) rows=rows.filter(r=>(r.country+" "+CTRY(r.country)).toLowerCase().includes(q.toLowerCase())
                           || select({country:r.country,text:q}).length>0);
 
   rows.forEach(r=>{r.chg=r.prev30_incidents?((r.d30_incidents-r.prev30_incidents)/r.prev30_incidents):null;});
   const k=SORT.key;
   rows.sort((a,b)=>{
-    let x=k==="country"?a.country:k==="chg"?(a.chg??-99):k==="danger_status"?a.danger_status:a[k];
-    let y=k==="country"?b.country:k==="chg"?(b.chg??-99):k==="danger_status"?b.danger_status:b[k];
-    return (typeof x==="string"?x.localeCompare(y):(x-y))*SORT.dir;
+    let x=k==="country"?CTRY(a.country):k==="chg"?(a.chg??-99):k==="danger_status"?a.danger_status:a[k];
+    let y=k==="country"?CTRY(b.country):k==="chg"?(b.chg??-99):k==="danger_status"?b.danger_status:b[k];
+    return (typeof x==="string"?x.localeCompare(y,LANG):(x-y))*SORT.dir;
   });
 
   $("#tbl thead").innerHTML=`<tr>
@@ -609,7 +680,7 @@ function renderTable(){
     const counts=Object.fromEntries(COLS.map(c=>[c,select({country:r.country,category:c}).length]));
     const ls=r.last_significant;
     return `<tr>
-      <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(r.country)}</button></td>
+      <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(CTRY(r.country))}</button></td>
       <td class="l"><span class="status-tag">${esc(r.danger_status)}</span></td>
       <td class="num">${r.d7_incidents}</td><td class="num">${r.d30_incidents}</td>
       <td class="num">${r.prev30_covered?r.prev30_incidents:`<span class="badge est" title="${T("noCovHint")}">${T("noCoverage")}</span>`}</td>
@@ -663,9 +734,9 @@ function drillCategory(country,cat){
   const list=select({country,category:cat});
   const [a,b]=bounds(WIN);
   openPanel({
-    trail:[T("world"),country,CAT(cat)],
-    title:`${esc(country)} &mdash; ${esc(CAT(cat))}`,
-    audit:T("auditCat")(list.length,esc(CAT(cat)),a,b,esc(label(WIN)),esc(country)),
+    trail:[T("world"),CTRY(country),CAT(cat)],
+    title:`${esc(CTRY(country))} &mdash; ${esc(CAT(cat))}`,
+    audit:T("auditCat")(list.length,esc(CAT(cat)),a,b,esc(label(WIN)),esc(CTRY(country))),
     body: list.length? list.map(incCard).join("")
       : `<div class="empty">${T("noneCell")}</div>`
   });
@@ -678,7 +749,7 @@ function incCard(i){
     <h3 class="en">${esc(i.title||T("untitled"))}</h3>
     <div class="meta">
       <span class="badge">${esc(i.event_date)}</span>
-      <span class="badge">${esc(i.location||i.admin1||i.country)}</span>
+      <span class="badge">${esc(i.location||i.admin1||CTRY(i.country))}</span>
       ${i.fatalities?`<span class="badge fat">${i.fatalities} ${T("killed")}${i.fatalities_disputed?" "+T("disputedShort"):""}</span>`:""}
       ${merged?`<span class="badge merged">${T("mergedN").replace("%",i.event_count)}</span>`:""}
       ${unver?`<span class="badge unver">${esc(i.verification_status.replace(/_/g," ").toLowerCase())}</span>`:""}
@@ -697,13 +768,13 @@ function openIncident(i){
     ? `${i.latitude.toFixed(4)}, ${i.longitude.toFixed(4)} <span class="badge">${esc(i.geo_precision_label)}</span>`
     : `<span class="badge est">${T("noCoords")} &mdash; ${esc(i.geo_precision_label||T("unknownPrec"))}</span>`;
   openPanel({
-    trail:[T("world"),i.country,CAT(i.security_category),T("incident")],
+    trail:[T("world"),CTRY(i.country),CAT(i.security_category),T("incident")],
     title:`<span class="en">${esc(i.title||T("incident"))}</span>`,
     audit:T("auditInc")(esc(i.incident_id),i.event_count),
     body:`
       <dl class="kv">
         <dt>${T("date")}</dt><dd>${esc(i.event_date)}</dd>
-        <dt>${T("country")}</dt><dd>${esc(i.country)}</dd>
+        <dt>${T("country")}</dt><dd>${esc(CTRY(i.country))}</dd>
         <dt>${T("adminRegion")}</dt><dd>${esc(i.admin1||"not reported")}</dd>
         <dt>${T("place")}</dt><dd>${esc(i.location||"not reported")}</dd>
         <dt>${T("coords")}</dt><dd>${geoTxt}</dd>
@@ -777,7 +848,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape")closePanel()});
 function renderCountry(){
   const c=CUR_COUNTRY, row=D.countries.find(r=>r.country===c);
   if(!row){$("#cName").textContent=T("noCountrySel");return}
-  $("#cName").textContent=c;
+  $("#cName").textContent=CTRY(c);
   $("#cStatus").textContent=row.danger_status;
   $("#cTrend").innerHTML=trLabel(row.trend);
 
@@ -844,7 +915,7 @@ function renderProx(){
 <p class="note">${T("proxNote").replace(/%/g,esc(city))}</p>`;
   $$("#cProx .row").forEach(el=>el.onclick=()=>{
     const list=bands[el.dataset.band];
-    openPanel({trail:[T("world"),c,el.dataset.band],
+    openPanel({trail:[T("world"),CTRY(c),el.dataset.band],
       title:`${esc(city)} &mdash; ${esc(el.dataset.band)}`,
       audit:T("auditProx")(list.length,esc(city),esc(label(WIN))),
       body:list.length?list.map(incCard).join(""):`<div class="empty">${T("noneBand")}</div>`});
@@ -874,7 +945,7 @@ function renderMap(){
     L.circleMarker([i.latitude,i.longitude],{radius:r,weight:1.5,color:"#7d241a",
       fillColor:f>=10?"#8d2020":f>0?"#c04f2c":"#dd8434",fillOpacity:.62})
       .bindPopup(`<h3 class="en">${esc(i.title||"")}</h3>
-        <div>${esc(i.event_date)} &middot; ${esc(i.location||i.admin1||i.country)}</div>
+        <div>${esc(i.event_date)} &middot; ${esc(i.location||i.admin1||CTRY(i.country))}</div>
         <div><b>${esc(CAT(i.security_category))}</b>${i.security_subtype?" &middot; "+esc(i.security_subtype):""}</div>
         <div>${(i.actors||[]).map(a=>esc(a.name)).join(" / ")||T("actorsNR")}</div>
         <div>${f} ${T("killed")}</div>
@@ -900,11 +971,12 @@ function boot(data){
   renderStatus();
   const regions=[...new Set(D.incidents.map(i=>i.region).filter(Boolean))].sort();
   D.incidents.forEach(i=>{if(i.region)REGION[i.country]=i.region});
-  fillSelect($("#f-region"),regions.map(r=>({v:r,t:r})),T("allRegions"));
+  fillSelect($("#f-region"),regions.map(r=>({v:r,t:REG(r)})),T("allRegions"));
   const catOpts=COLS.filter(c=>D.categories[c]).map(c=>({v:c,t:CAT(c)}));
   fillSelect($("#f-cat"),catOpts,T("allCats"));
   fillSelect($("#m-cat"),catOpts,T("allCats"));
-  fillSelect($("#m-country"),D.countries.map(c=>({v:c.country,t:c.country})),T("allCountriesOpt"));
+  fillSelect($("#m-country"),D.countries.map(c=>({v:c.country,t:CTRY(c.country)}))
+    .sort((a,b)=>a.t.localeCompare(b.t,LANG)),T("allCountriesOpt"));
   fillSelect($("#f-status"),[...new Set(D.countries.map(c=>c.danger_status))].map(s=>({v:s,t:s})),T("all"));
   ["#q","#f-region","#f-cat","#f-trend","#f-status"].forEach(s=>{
     $(s).addEventListener("input",renderTable)});
