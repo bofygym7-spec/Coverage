@@ -42,16 +42,42 @@ jobs:
 
       - name: Refresh
         env:
-          GDELT_API_KEY: ${{ secrets.GDELT_API_KEY }}
+          GDELT_API_KEY: ${{ secrets.GDELT_API_KEY }}   # never echoed, never written to disk
         run: |
           if [ "${{ inputs.backfill }}" = "true" ]; then
             python -m pipeline.run_pipeline --backfill
           else
-            python -m pipeline.run_pipeline --days 4
+            python -m pipeline.run_pipeline --days 4    # overlap absorbs late-coded events
           fi
           python pipeline/build_site.py site/dashboard.html
+          # One self-contained file at the site root. Netlify serves index.html
+          # by default, and inlined data means no second request to fetch.
+          mkdir -p dist && cp site/dashboard.html dist/index.html
 
-      - name: Publish
+      # Committed into the repository as well as published, so the dashboard is
+      # reachable from github.com for anyone whose network blocks github.io.
+      # The file is fully self-contained, so downloading it is enough.
+      - name: Commit built dashboard
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f site/dashboard.html
+          git diff --staged --quiet || git commit -m "Rebuild dashboard [skip ci]"
+          git push
+
+      # Deploys to Netlify when the two secrets are present, and is skipped
+      # silently when they are not, so the workflow still works without them.
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        if: ${{ env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != '' }}
+        run: |
+          npm install -g netlify-cli@17
+          netlify deploy --dir=dist --prod \
+            --message "Refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+
+      - name: Publish to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
