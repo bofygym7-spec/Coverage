@@ -479,12 +479,9 @@ const DICT={
   tr_esc:"تصعيد كبير", tr_det:"تدهور", tr_sta:"مستقر", tr_imp:"تحسن",
   tr_nc:"سجل غير كاف", tr_na:"لا نشاط",
   world:"العالم", incident:"حادث", gdeltEvent:"السجل المصدري", sourceArticle:"المقال المصدر",
-  auditCat:(n,cat,a,b,w,c)=>`هذه هي الحوادث ال<b>${n}</b> ذاتها التي ينتج عنها الرقم الظاهر في الجدول.
-    الأساس: التصنيف الأمني <b>${cat}</b>، وتاريخ الحدث بين <b>${a}</b> و<b>${b}</b> (${w})، والدولة <b>${c}</b>.
-    تغيير النافذة الزمنية في شريط الأدوات يغير العدد وهذه القائمة معا.`,
-  auditInc:(id,n)=>`الحادث <b>${id}</b> يوحد <b>${n}</b> من السجلات المصدرية.
-    كل رقم أدناه مخزن، ولم يشتق لحظة العرض.`,
-  auditProx:(n,city,w)=>`<b>${n}</b> حادث، مقيسة من ${city} باستخدام الإحداثيات المخزنة لكل حادث. الأساس: ${w}.`,
+  auditCat:(n,cat,a,b,w,c)=>`<b>${n}</b> حادث \u00b7 ${cat} \u00b7 ${c} \u00b7 ${a} — ${b}`,
+  auditInc:(id,n)=>`${id} \u00b7 ${n} سجل مصدري`,
+  auditProx:(n,city,w)=>`<b>${n}</b> حادث \u00b7 ${city} \u00b7 ${w}`,
   noneCell:"لا توجد حوادث في هذه الخانة ضمن النافذة المحددة.",
   untitled:"حادث بلا عنوان", killed:"قتيل", disputedShort:"(متنازع عليه)",
   mergedN:"دمج % من السجلات المصدرية", intercepted:"اعترض / بلا أثر",
@@ -506,8 +503,6 @@ const DICT={
   sourceArticles:"المقالات المصدرية الأصلية", via:"عبر",
   noSources:"لا توجد مقالات مصدرية مرفقة.", dedup:"إزالة التكرار",
   method:"الطريقة", confidence:"درجة الثقة",
-  singleRecord:"سجل واحد؛ لم يطبق أي توحيد.",
-  rawNote:"تحفظ السجلات الأولية دون تغيير في جدول raw_events. التوحيد ينشئ صف حادث جديدا ولا يستبدل الأصول أو يحذفها إطلاقا.",
   noCoords:"لا توجد إحداثيات صالحة", unknownPrec:"دقة غير معروفة",
   noCountrySel:"لم تحدد دولة", allCats:"كل التصنيفات", allRegions:"كل المناطق",
   allCountriesOpt:"كل الدول", allCountries:"→ كل الدول",
@@ -518,7 +513,6 @@ const DICT={
   bInside:"داخل المدينة (أقل من 8 كم)", b025:"نحو 0–25 كم", b25100:"نحو 25–100 كم",
   bElse:"في مواضع أخرى من الدولة", bUnres:"الموقع الجغرافي غير محدد",
   noneBand:"لا يوجد ضمن هذا النطاق.",
-  proxNote:"الحوادث المرمزة بدقة مركز الدولة أو الإقليم تدرج بوصفها <em>غير محددة الموقع</em>، ولا تحتسب إطلاقا على أنها قريبة من %. الخطر في مواضع أخرى من دولة كبيرة لا يعامل بوصفه خطرا في هذا الموقع.",
   fatalOnly:"الحوادث المميتة فقط", plotted:"مرسوم",
   withheld:"محجوب: لا توجد إحداثيات دقيقة", openFull:"فتح سجل الحادث الكامل",
   actorsNR:"الأطراف غير مبلغ عنها",
@@ -565,14 +559,9 @@ const DICT={
   tr_esc:"SIGNIFICANT ESCALATION", tr_det:"DETERIORATING", tr_sta:"STABLE",
   tr_imp:"IMPROVING", tr_nc:"insufficient history", tr_na:"NO ACTIVITY",
   world:"World", incident:"Incident", gdeltEvent:"source record", sourceArticle:"source article",
-  auditCat:(n,cat,a,b,w,c)=>`These are the exact <b>${n}</b> incident(s) that produce the figure
-    shown in the table. Basis: security category <b>${cat}</b>, event date between <b>${a}</b> and
-    <b>${b}</b> (${w}), country <b>${c}</b>. Changing the window in the toolbar changes both the
-    count and this list together.`,
-  auditInc:(id,n)=>`Incident <b>${id}</b> consolidates <b>${n}</b> source record(s).
-    Every figure below is stored, not derived at display time.`,
-  auditProx:(n,city,w)=>`<b>${n}</b> incident(s), measured from ${city} using each incident's own
-    stored coordinates. Basis: ${w}.`,
+  auditCat:(n,cat,a,b,w,c)=>`<b>${n}</b> incidents \u00b7 ${cat} \u00b7 ${c} \u00b7 ${a} — ${b}`,
+  auditInc:(id,n)=>`${id} \u00b7 ${n} source record(s)`,
+  auditProx:(n,city,w)=>`<b>${n}</b> incidents \u00b7 ${city} \u00b7 ${w}`,
   noneCell:"No incidents in this cell for the selected window.",
   untitled:"Untitled incident", killed:"killed", disputedShort:"(disputed)",
   mergedN:"% source records merged", intercepted:"intercepted / no impact",
@@ -594,8 +583,6 @@ const DICT={
   sourceArticles:"Original source articles", via:"via",
   noSources:"No source articles attached.", dedup:"Deduplication",
   method:"Method", confidence:"Confidence",
-  singleRecord:"Single record; no consolidation was applied.",
-  rawNote:"Raw source records are retained unchanged in raw_events. Consolidation creates a new incident row and never overwrites or deletes the originals.",
   noCoords:"no usable coordinates", unknownPrec:"unknown precision",
   noCountrySel:"No country selected", allCats:"All categories", allRegions:"All regions",
   allCountriesOpt:"All countries", allCountries:"&larr; All countries",
@@ -606,7 +593,6 @@ const DICT={
   bInside:"Inside city (under 8 km)", b025:"Approximately 0–25 km", b25100:"Approximately 25–100 km",
   bElse:"Elsewhere in country", bUnres:"Geography unresolved",
   noneBand:"None in this band.",
-  proxNote:"Incidents coded at country or region centroid precision are listed as <em>geography unresolved</em> and are never counted as near %. Danger elsewhere in a large country is not treated as danger at this location.",
   fatalOnly:"Fatal incidents only", plotted:"plotted",
   withheld:"withheld: no exact coordinates", openFull:"Open full incident record",
   actorsNR:"actors not reported",
@@ -1192,8 +1178,8 @@ function openIncident(i){
       <dl class="kv"><dt>${T("method")}</dt><dd class="en">${esc(i.dedup_method)}</dd>
       <dt>${T("confidence")}</dt><dd>${i.dedup_confidence}</dd></dl>
       ${ev.length?`<div class="evbox">${esc(JSON.stringify(ev,null,1))}</div>`:
-        `<p class="note">${T("singleRecord")}</p>`}
-      <p class="note">${T("rawNote")}</p>`
+        ""}
+`
   });
   if(i.latitude!=null && i.geo_precision!==3){
     setTimeout(()=>{
@@ -1294,7 +1280,7 @@ function renderProx(){
       data-band="${esc(k)}"><span>${esc(k)}</span>
       <span class="num"><b>${v.length}</b>${v.length?` &nbsp;<span style="color:var(--muted)">${v.reduce((s,i)=>s+(i.fatalities||0),0)} ${T("killed")}</span>`:""}</span></div>`).join("")}
     </div>
-<p class="note">${T("proxNote").replace(/%/g,esc(city))}</p>`;
+`;
   $$("#cProx .row").forEach(el=>el.onclick=()=>{
     const list=bands[el.dataset.band];
     openPanel({trail:[T("world"),CTRY(c),el.dataset.band],
