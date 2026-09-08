@@ -274,8 +274,18 @@ select.enhanced{position:absolute;width:1px;height:1px;opacity:0;pointer-events:
 td.dstat .badge{display:inline-block;margin:1px 0}
 td.dstat{white-space:nowrap;line-height:1.9}
 @media(max-width:860px){.srcbar{padding:8px 10px;font-size:11px}}
+.story{border:var(--hair);border-radius:var(--r);padding:11px 13px;margin:8px 0}
+.story .st-title{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4}
+.story .st-meta{font-size:11px;color:var(--muted);margin:3px 0 7px}
+.story ul.srcs{margin:0}
 html[dir=rtl]{--panel-hidden:-100%}
 html[dir=rtl] body{font-family:var(--ar);font-size:14.5px;line-height:1.7}
+/* Majalla sets small for its point size, Noto Naskh sets larger. Each gets the
+   size that matches the other optically, so the layout does not shift between a
+   machine that has Majalla and one that falls back. */
+html[dir=rtl][data-majalla="0"] body{font-size:13.4px;line-height:1.65}
+html[dir=rtl][data-majalla="0"] table{font-size:12.2px}
+html[dir=rtl][data-majalla="0"] .status .brand{font-size:14.5px}
 html[dir=rtl] .status .brand{font-size:15.5px}
 html[dir=rtl] table{font-size:13px}
 html[dir=rtl] thead th{font-size:12px}
@@ -329,6 +339,7 @@ td.country,thead th.country{inset-inline-start:40px}
       </select>
       <label for="f-status" data-i18n="danger"></label><select id="f-status"><option value="">All</option></select>
     <div class="winsel" role="group" aria-label="Counting window">
+      <button data-win="d1" data-i18n="w1"></button>
       <button data-win="d7" data-i18n="w7"></button>
       <button data-win="d30" aria-pressed="true" data-i18n="w30"></button>
       <button data-win="d90" data-i18n="w90"></button>
@@ -369,7 +380,7 @@ td.country,thead th.country{inset-inline-start:40px}
     <label for="m-country" data-i18n="country"></label><select id="m-country"></select>
     <label for="m-cat" data-i18n="category"></label><select id="m-cat"></select>
     <label for="m-win" data-i18n="window"></label><select id="m-win">
-      <option value="d7" data-i18n="w7"></option><option value="d30" selected data-i18n="w30"></option>
+      <option value="d1">1 day</option><option value="d7" data-i18n="w7"></option><option value="d30" selected data-i18n="w30"></option>
       <option value="d90" data-i18n="w90"></option><option value="all" data-i18n="wall"></option>
     </select>
     <label><input type="checkbox" id="m-fatal"> <span data-i18n="fatalOnly"></span></label>
@@ -430,6 +441,7 @@ const DICT={
   vGlobal:"عالمي", vCountry:"الدولة", vMap:"الخريطة",
   search:"ابحث في الدول أو نص الحوادث", region:"المنطقة", category:"التصنيف",
   trend:"الاتجاه", danger:"الخطر", all:"الكل", window:"النافذة",
+  w1:"اليوم", c1:"اليوم", lw1:"اليوم",
   w7:"7 أيام", w30:"30 يوما", w90:"90 يوما", wall:"كل الفترة",
   c7:"7 أيام", c30:"30 يوما", c90:"90 يوما",
   mapOffline:"تعذر تحميل مكتبة الخرائط. تحقق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. باقي اللوحة يعمل دون الخريطة.",
@@ -484,7 +496,9 @@ const DICT={
   notReported:"غير مبلغ عنه", notAssigned:"غير محدد", notScored:"غير مقيم",
   none:"لا يوجد", noneLinked:"لا توجد", noSummary:"لا يوجد ملخص.",
   summaryCoded:"الملخص كما ورد في المصدر", contribRecords:"السجلات المصدرية المكونة",
-  stories:"الروابط المرجعية", openRef:"فتح المرجع", noStory:"لا توجد روابط مرجعية على هذه السجلات.",
+  coverage:"التغطية الإخبارية", articlesWord:"مقال",
+  ofReported:"من % مقال في العنقود", noCoverage2:"لا توجد تغطية إخبارية مرتبطة بهذا الحادث بعد.",
+  partialHint:"عدد المقالات المخزنة أقل مما يذكره المصدر للعنقود كاملا. المعروض هو ما تم جلبه فعليا.", noStory:"لا توجد روابط مرجعية على هذه السجلات.",
   sourceArticles:"المقالات المصدرية الأصلية", via:"عبر",
   noSources:"لا توجد مقالات مصدرية مرفقة.", dedup:"إزالة التكرار",
   method:"الطريقة", confidence:"درجة الثقة",
@@ -513,6 +527,7 @@ const DICT={
   vGlobal:"Global", vCountry:"Country", vMap:"Map",
   search:"Search country or incident text", region:"Region", category:"Category",
   trend:"Trend", danger:"Danger", all:"All", window:"Window",
+  w1:"Today", c1:"Today", lw1:"today",
   w7:"7 days", w30:"30 days", w90:"90 days", wall:"All time",
   c7:"7d", c30:"30d", c90:"90d",
   mapOffline:"The map library could not load. Check the network connection and reload. The rest of the dashboard works without it.",
@@ -569,7 +584,9 @@ const DICT={
   notReported:"not reported", notAssigned:"not assigned", notScored:"not scored",
   none:"none", noneLinked:"none linked", noSummary:"No summary available.",
   summaryCoded:"Summary as coded", contribRecords:"Contributing source records",
-  stories:"Reference links", openRef:"Open reference", noStory:"No reference links on these records.",
+  coverage:"News coverage", articlesWord:"articles",
+  ofReported:"of % in the cluster", noCoverage2:"No news coverage linked to this incident yet.",
+  partialHint:"Fewer articles are stored than the source reports for the full cluster. What is shown is what was actually fetched.", noStory:"No reference links on these records.",
   sourceArticles:"Original source articles", via:"via",
   noSources:"No source articles attached.", dedup:"Deduplication",
   method:"Method", confidence:"Confidence",
@@ -722,10 +739,10 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 function bounds(win){
   const as=new Date(D.meta.as_of+"T00:00:00Z"), d=n=>{const x=new Date(as);x.setUTCDate(x.getUTCDate()-n);return x.toISOString().slice(0,10)};
   if(win==="all") return [D.meta.coverage_start, D.meta.as_of];
-  return [{d7:d(6),d30:d(29),d90:d(89)}[win], D.meta.as_of];
+  return [{d1:d(0),d7:d(6),d30:d(29),d90:d(89)}[win], D.meta.as_of];
 }
 const inWin=(dt,win)=>{const[a,b]=bounds(win);return dt&&dt>=a&&dt<=b};
-function label(win){return {d7:T("lw7"),d30:T("lw30"),d90:T("lw90"),all:T("lwall")}[win]}
+function label(win){return {d1:T("lw1"),d7:T("lw7"),d30:T("lw30"),d90:T("lw90"),all:T("lwall")}[win]}
 
 /* Single source of truth: the table, the drill-down and the map all call this,
    so a displayed number and its underlying list can never disagree. */
@@ -819,7 +836,7 @@ function show(v){
 const HEAD=()=>[
   {k:"country",t:T("country"),l:1,cls:"country"},
   {k:"danger_status",t:T("dangerStatus"),l:1},
-  {k:"d7_incidents",t:T("c7")},{k:"d30_incidents",t:T("c30")},
+  {k:"d1_incidents",t:T("c1")},{k:"d7_incidents",t:T("c7")},{k:"d30_incidents",t:T("c30")},
   {k:"prev30_incidents",t:T("prev30")},{k:"chg",t:T("chg30")},
   {k:"d90_incidents",t:T("c90")},
   {k:"d30_fatalities",t:T("fat30")},{k:"d90_fatalities",t:T("fat90")}
@@ -878,7 +895,7 @@ function renderTable(){
 
   $("#tbl thead").innerHTML=`<tr>
     <th class="serial"></th><th class="l country" colspan="2" style="text-align:start">${T("basis")}: ${esc(label(WIN))}</th>
-    <th class="group" colspan="7">${T("rolling")}</th>
+    <th class="group" colspan="8">${T("rolling")}</th>
     <th class="group" colspan="${COLS.length}">${T("secCats")} (${esc(label(WIN))})</th>
     <th class="group" colspan="3">${T("currency")}</th></tr><tr>`+
     `<th class="serial">#</th>`+HEAD().map(h=>`<th class="${h.l?"l ":""}${h.cls||""}" data-k="${h.k}"
@@ -894,6 +911,7 @@ function renderTable(){
       <td class="serial num">${_ix+1}</td>
       <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(CTRY(r.country))}</button></td>
       <td class="l dstat">${statusCell(r)}</td>
+      <td class="num">${r.d1_incidents}</td>
       <td class="num">${r.d7_incidents}</td><td class="num">${r.d30_incidents}</td>
       <td class="num">${r.prev30_covered?r.prev30_incidents:`<span class="badge est" title="${T("noCovHint")}">${T("noCoverage")}</span>`}</td>
       <td class="num delta ${r.prev30_covered&&r.chg>0?"pos":r.prev30_covered&&r.chg<0?"neg":""}">${!r.prev30_covered?"&ndash;":r.chg===null?"&ndash;":(r.chg>0?"+":"")+Math.round(r.chg*100)+"%"}</td>
@@ -906,7 +924,7 @@ function renderTable(){
        <td class="l">${ls?`<button class="linkbtn" data-inc="${esc(ls.incident_id)}">${esc((ls.title||"").slice(0,58))}</button>
           <span class="badge">${esc(ls.date)}</span>`:'<span style="color:#b9c1c9">${T("noneInWindow")}</span>'}</td>
        <td class="l">${esc(r.latest_event_date||"&ndash;")}</td></tr>`;
-  }).join("") : `<tr><td colspan="25" class="empty">${T("noCountries")}</td></tr>`;
+  }).join("") : `<tr><td colspan="26" class="empty">${T("noCountries")}</td></tr>`;
 
   $("#rowcount").textContent=`${rows.length} ${T("countriesWord")} \u00b7 ${D.meta.total_incidents} ${T("incidentsWord")}`;
   renderCards(rows);
@@ -999,6 +1017,19 @@ function menuKeys(e,box){
 }
 
 document.addEventListener("click",()=>$$(".sel").forEach(closeSel));
+
+function detectArabicFont(){
+  // Width comparison: if the named font is absent the browser silently uses the
+  // generic, and the measured width matches. Cheap and needs no font loading API.
+  try{
+    const c=document.createElement("canvas").getContext("2d");
+    const probe="ابجدهوزحطي";
+    c.font='72px monospace';           const base=c.measureText(probe).width;
+    c.font='72px "Sakkal Majalla", monospace';
+    document.documentElement.dataset.majalla =
+      (c.measureText(probe).width !== base) ? "1" : "0";
+  }catch(e){ document.documentElement.dataset.majalla = "0"; }
+}
 
 function localStamp(iso){
   if(!iso) return "–";
@@ -1113,10 +1144,21 @@ function openIncident(i){
       <h4 class="sec">${T("contribRecords")} (${i.event_count})</h4>
       <ul class="srcs">${i.event_ids.map(e=>`<li><span class="dom">${esc(e)}</span></li>`).join("")}</ul>
 
-      <h4 class="sec">${T("stories")}</h4>
-      <ul class="srcs">${(i.story_urls||[]).length? i.story_urls.map((u,ix)=>
-        `<li><a href="${esc(u)}" target="_blank" rel="noopener">${T("openRef")} ${ix+1}</a></li>`).join("")
-        : `<li>${T("noStory")}</li>`}</ul>
+      <h4 class="sec">${T("coverage")}</h4>
+      ${(i.stories||[]).length ? i.stories.map(st=>{
+        const shown=(st.articles||[]).length, said=st.article_count_reported||shown;
+        return `<div class="story">
+          <div class="st-title en">${esc(st.title||"")}</div>
+          <div class="st-meta">${esc(st.story_date||"")}
+            ${st.category?" · "+esc(st.category):""}
+            · ${shown} ${T("articlesWord")}${
+              said>shown ? ` <span class="badge est" title="${esc(T("partialHint"))}">${
+                T("ofReported").replace("%",said)}</span>` : ""}</div>
+          <ul class="srcs">${(st.articles||[]).map(a=>
+            `<li><a href="${esc(a.url)}" target="_blank" rel="noopener" class="en">${
+              esc(a.title||a.url)}</a>${a.domain?` <span class="dom">${esc(a.domain)}</span>`:""}</li>`
+            ).join("")}</ul></div>`;
+        }).join("") : `<p class="note">${T("noCoverage2")}</p>`}
 
       <h4 class="sec">${T("sourceArticles")} (${(i.sources||[]).length})</h4>
       <ul class="srcs">${(i.sources||[]).map(s=>`<li>
@@ -1176,7 +1218,7 @@ function renderCountry(){
   $("#cCat").value=keepCat; $("#cCity").value=keepCity;
 
   $("#cStats").innerHTML=[
-    [T("w7"),row.d7_incidents],[T("w30"),row.d30_incidents],
+    [T("w1"),row.d1_incidents],[T("w7"),row.d7_incidents],[T("w30"),row.d30_incidents],
     [T("prev30full"),row.prev30_covered?row.prev30_incidents:T("noCoverage")],[T("w90"),row.d90_incidents],
     [T("fat30full"),row.d30_fatalities],[T("fat90full"),row.d90_fatalities],
     [T("exactGeo"),row.geo_quality.exact_pct+"%"],
@@ -1292,6 +1334,7 @@ function fillSelect(el,vals,all){el.innerHTML=`<option value="">${all}</option>`
   vals.map(v=>`<option value="${esc(v.v)}">${esc(v.t)}</option>`).join("")}
 function boot(data){
   D=data;
+  if(typeof detectArabicFont==='function') detectArabicFont();
   applyStatic();
   renderStatus();
   const regions=[...new Set(D.incidents.map(i=>i.region).filter(Boolean))].sort();
