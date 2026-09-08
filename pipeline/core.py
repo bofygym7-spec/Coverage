@@ -193,6 +193,7 @@ def save_incidents(con, incidents: list[dict]):
 
 def windows(as_of: date) -> dict[str, tuple[date, date]]:
     return {
+        "d1":    (as_of,                      as_of),
         "d7":    (as_of - timedelta(days=6),  as_of),
         "d30":   (as_of - timedelta(days=29), as_of),
         "prev30":(as_of - timedelta(days=59), as_of - timedelta(days=30)),
