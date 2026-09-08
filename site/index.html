@@ -278,6 +278,10 @@ td.dstat{white-space:nowrap;line-height:1.9}
 .story .st-title{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4}
 .story .st-meta{font-size:11px;color:var(--muted);margin:3px 0 7px}
 .story ul.srcs{margin:0}
+.recid{font-weight:600;color:var(--ink);cursor:pointer;margin-inline-end:8px}
+.recid:hover{color:var(--accent)}
+.recid.copied::after{content:" \2713";color:#22603a}
+ul.srcs .dom.en{font-size:11px;color:var(--muted);user-select:all}
 html[dir=rtl]{--panel-hidden:-100%}
 html[dir=rtl] body{font-family:var(--ar);font-size:14.5px;line-height:1.7}
 /* Majalla sets small for its point size, Noto Naskh sets larger. Each gets the
@@ -496,7 +500,7 @@ const DICT={
   notReported:"غير مبلغ عنه", notAssigned:"غير محدد", notScored:"غير مقيم",
   none:"لا يوجد", noneLinked:"لا توجد", noSummary:"لا يوجد ملخص.",
   summaryCoded:"الملخص كما ورد في المصدر", contribRecords:"السجلات المصدرية المكونة",
-  coverage:"التغطية الإخبارية", articlesWord:"مقال",
+  recordN:"السجل %", coverage:"التغطية الإخبارية", articlesWord:"مقال",
   ofReported:"من % مقال في العنقود", noCoverage2:"لا توجد تغطية إخبارية مرتبطة بهذا الحادث بعد.",
   partialHint:"عدد المقالات المخزنة أقل مما يذكره المصدر للعنقود كاملا. المعروض هو ما تم جلبه فعليا.", noStory:"لا توجد روابط مرجعية على هذه السجلات.",
   sourceArticles:"المقالات المصدرية الأصلية", via:"عبر",
@@ -584,7 +588,7 @@ const DICT={
   notReported:"not reported", notAssigned:"not assigned", notScored:"not scored",
   none:"none", noneLinked:"none linked", noSummary:"No summary available.",
   summaryCoded:"Summary as coded", contribRecords:"Contributing source records",
-  coverage:"News coverage", articlesWord:"articles",
+  recordN:"Record %", coverage:"News coverage", articlesWord:"articles",
   ofReported:"of % in the cluster", noCoverage2:"No news coverage linked to this incident yet.",
   partialHint:"Fewer articles are stored than the source reports for the full cluster. What is shown is what was actually fetched.", noStory:"No reference links on these records.",
   sourceArticles:"Original source articles", via:"via",
@@ -874,6 +878,19 @@ function renderCards(rows){
 
 const num = v => (v === undefined || v === null) ? "–" : v;
 
+// One click copies the identifier, so an auditor can paste it into the database
+// or the API without selecting a hex string by hand.
+document.addEventListener("click", e => {
+  const el = e.target.closest && e.target.closest(".recid");
+  if (!el) return;
+  const id = el.dataset.id || "";
+  const done = () => { el.classList.add("copied");
+                       setTimeout(() => el.classList.remove("copied"), 1200); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(id).then(done).catch(() => {});
+  } else { done(); }
+});
+
 function renderTable(){
   const q=$("#q").value.trim(), reg=$("#f-region").value, cat=$("#f-cat").value,
         tr=$("#f-trend").value, st=$("#f-status").value;
@@ -1144,7 +1161,10 @@ function openIncident(i){
       <p class="en" style="font-size:12.5px;margin:0;color:var(--ink-2)">${esc(i.summary||T("noSummary"))}</p>
 
       <h4 class="sec">${T("contribRecords")} (${i.event_count})</h4>
-      <ul class="srcs">${i.event_ids.map(e=>`<li><span class="dom">${esc(e)}</span></li>`).join("")}</ul>
+      <ul class="srcs">${i.event_ids.map((e,ix)=>
+        `<li><span class="recid" title="${esc(e)}" data-id="${esc(e)}"
+           role="button" tabindex="0">${T("recordN").replace("%",ix+1)}</span>
+         <span class="dom en">${esc(e)}</span></li>`).join("")}</ul>
 
       <h4 class="sec">${T("coverage")}</h4>
       ${(i.stories||[]).length ? i.stories.map(st=>{
