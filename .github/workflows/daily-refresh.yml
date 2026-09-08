@@ -58,12 +58,26 @@ jobs:
       # reachable from github.com for anyone whose network blocks github.io.
       # The file is fully self-contained, so downloading it is enough.
       - name: Commit built dashboard
+        # Optional convenience copy for anyone who cannot reach the hosted site.
+        # Never allowed to fail the run: the data is already safe in the cache by
+        # this point, and a rejected push is a git bookkeeping problem, not a
+        # data problem.
+        continue-on-error: true
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f site/dashboard.html
-          git diff --staged --quiet || git commit -m "Rebuild dashboard [skip ci]"
-          git push
+          git diff --staged --quiet && { echo "no change"; exit 0; }
+          git commit -m "Rebuild dashboard [skip ci]"
+          # The branch can move while the job runs — an edit made in the web UI
+          # mid-run is enough. Rebase onto whatever landed, then retry.
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
+              git push && { echo "pushed on attempt $i"; exit 0; }
+            echo "push race, retrying ($i/3)"; sleep 5
+          done
+          echo "::warning::Could not commit the built dashboard after 3 attempts."
+          echo "::warning::This does not affect the data or the hosted site."
 
       # Deploys to Netlify when the two secrets are present, and is skipped
       # silently when they are not, so the workflow still works without them.
@@ -72,10 +86,19 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         if: ${{ env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != '' }}
+        # A hosting problem should not discard a good data refresh. The database
+        # is already committed by this point, so a failure here costs only the
+        # upload and the next run will publish the same content.
+        continue-on-error: true
         run: |
           npm install -g netlify-cli@17
-          netlify deploy --dir=dist --prod \
-            --message "Refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+          if ! netlify deploy --dir=dist --prod --site "$NETLIFY_SITE_ID" \
+                 --message "Refresh $(date -u +%Y-%m-%dT%H:%MZ)"; then
+            echo "::warning::Netlify deploy failed. Check NETLIFY_SITE_ID is the"
+            echo "::warning::site's API ID (Site configuration > General > Site"
+            echo "::warning::information), and that the site exists."
+            exit 1
+          fi
 
       - name: Publish to GitHub Pages
         uses: actions/upload-pages-artifact@v3
