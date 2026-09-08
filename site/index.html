@@ -426,11 +426,11 @@ const DICT={
  ar:{
   brand:"الأخبار الأمنية والخطرة", lastRefresh:"آخر تحديث",
   latestEventDate:"تاريخ أحدث حدث", coverageStart:"بداية تغطية البيانات",
-  incidentsStored:"الحوادث المخزنة", rawEvents:"السجلات الأولية",
+  incidentsStored:"إجمالي الحوادث", rawEvents:"السجلات الأولية",
   vGlobal:"عالمي", vCountry:"الدولة", vMap:"الخريطة",
   search:"ابحث في الدول أو نص الحوادث", region:"المنطقة", category:"التصنيف",
   trend:"الاتجاه", danger:"الخطر", all:"الكل", window:"النافذة",
-  w7:"7 أيام", w30:"30 يوما", w90:"90 يوما", wall:"كامل المخزون",
+  w7:"7 أيام", w30:"30 يوما", w90:"90 يوما", wall:"كل الفترة",
   c7:"7 أيام", c30:"30 يوما", c90:"90 يوما",
   mapOffline:"تعذر تحميل مكتبة الخرائط. تحقق من الاتصال بالإنترنت ثم أعد تحميل الصفحة. باقي اللوحة يعمل دون الخريطة.",
   officialSources:"المصادر الرسمية", effective:"سار من",
@@ -447,8 +447,8 @@ const DICT={
   div_DESIGNATED_BUT_QUIET_hint:"توجد جهة رسمية تصنف هذه الدولة، بينما القياس من الحوادث المخزنة منخفض. قد تكون الظروف قد خفت، أو قد تكون التغطية الإعلامية تراجعت. لا تحسم من اللوحة وحدها.",
   scope:"النطاق", scopeCountries:"الدول فقط", scopeAll:"كل المدخلات",
   scope_WATERS:"مياه/بحار", scope_REGION:"إقليم", scope_UNRESOLVED:"موقع غير محدد",
-  storedFrom:"المخزن من", gapHint:"المخزون يبدأ بعد بداية تغطية المصدر. الفترة الأسبق لم تستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغل التحديث مع خيار الاستيراد الكامل (backfill).",
-  lw7:"آخر 7 أيام", lw30:"آخر 30 يوما", lw90:"آخر 90 يوما", lwall:"كامل السجل المخزن",
+  storedFrom:"البيانات من", gapHint:"البيانات تبدأ بعد بداية تغطية المصدر. الفترة الأسبق لم تستورد بعد، وهذا لا يعني عدم وقوع أحداث فيها. شغل التحديث مع خيار الاستيراد الكامل (backfill).",
+  lw7:"آخر 7 أيام", lw30:"آخر 30 يوما", lw90:"آخر 90 يوما", lwall:"كل الفترة المتاحة",
   country:"الدولة", dangerStatus:"حالة الخطر", prev30:"ال30 السابقة",
   chg30:"التغير خلال 30 يوما", fat30:"وفيات 30 يوما", fat90:"وفيات 90 يوما",
   prev30full:"ال30 يوما السابقة", fat30full:"وفيات 30 يوما", fat90full:"وفيات 90 يوما",
@@ -459,7 +459,7 @@ const DICT={
   noCovHint:"هذه الفترة لم تستورد بعد. هذا لا يعني عدم وقوع أحداث.",
   openCount:"فتح الحوادث المحتسبة هنا (%)", noneInWindow:"لا يوجد ضمن النافذة",
   noCountries:"لا توجد دول مطابقة لهذه المرشحات.",
-  countriesWord:"دولة", incidentsWord:"حادث في المخزون", incidentsWord2:"حادث",
+  countriesWord:"دولة", incidentsWord:"حادث", incidentsWord2:"حادث",
   tr_esc:"تصعيد كبير", tr_det:"تدهور", tr_sta:"مستقر", tr_imp:"تحسن",
   tr_nc:"سجل غير كاف", tr_na:"لا نشاط",
   world:"العالم", incident:"حادث", gdeltEvent:"السجل المصدري", sourceArticle:"المقال المصدر",
@@ -509,11 +509,11 @@ const DICT={
  en:{
   brand:"Security &amp; Danger Dashboard", lastRefresh:"Last refresh",
   latestEventDate:"Latest event date", coverageStart:"Data coverage start",
-  incidentsStored:"Incidents in store", rawEvents:"Raw source records",
+  incidentsStored:"Total incidents", rawEvents:"Raw source records",
   vGlobal:"Global", vCountry:"Country", vMap:"Map",
   search:"Search country or incident text", region:"Region", category:"Category",
   trend:"Trend", danger:"Danger", all:"All", window:"Window",
-  w7:"7 days", w30:"30 days", w90:"90 days", wall:"Full store",
+  w7:"7 days", w30:"30 days", w90:"90 days", wall:"All time",
   c7:"7d", c30:"30d", c90:"90d",
   mapOffline:"The map library could not load. Check the network connection and reload. The rest of the dashboard works without it.",
   officialSources:"Official sources", effective:"effective",
@@ -530,8 +530,8 @@ const DICT={
   div_DESIGNATED_BUT_QUIET_hint:"An authority designates this country while the stored incidents measure low. Conditions may have abated, or coverage may have fallen away. Not resolvable from this dashboard alone.",
   scope:"Scope", scopeCountries:"Countries only", scopeAll:"All entries",
   scope_WATERS:"waters", scope_REGION:"region", scope_UNRESOLVED:"unresolved",
-  storedFrom:"Stored from", gapHint:"The store begins after the source coverage start. The earlier period has not been ingested; that is not the same as zero events. Run the workflow with backfill enabled.",
-  lw7:"last 7 days", lw30:"last 30 days", lw90:"last 90 days", lwall:"full stored history",
+  storedFrom:"Data from", gapHint:"The store begins after the source coverage start. The earlier period has not been ingested; that is not the same as zero events. Run the workflow with backfill enabled.",
+  lw7:"last 7 days", lw30:"last 30 days", lw90:"last 90 days", lwall:"all available history",
   country:"Country", dangerStatus:"Danger status", prev30:"Prev 30d",
   chg30:"30d change", fat30:"30d fatal.", fat90:"90d fatal.",
   prev30full:"Previous 30 days", fat30full:"30d fatalities", fat90full:"90d fatalities",
@@ -542,7 +542,7 @@ const DICT={
   noCovHint:"This period has not been ingested yet. It is not zero events.",
   openCount:"Open the % incident(s) counted here", noneInWindow:"none in window",
   noCountries:"No countries match these filters.",
-  countriesWord:"countries", incidentsWord:"incidents in store", incidentsWord2:"incidents",
+  countriesWord:"countries", incidentsWord:"incidents", incidentsWord2:"incidents",
   tr_esc:"SIGNIFICANT ESCALATION", tr_det:"DETERIORATING", tr_sta:"STABLE",
   tr_imp:"IMPROVING", tr_nc:"insufficient history", tr_na:"NO ACTIVITY",
   world:"World", incident:"Incident", gdeltEvent:"source record", sourceArticle:"source article",
@@ -941,6 +941,10 @@ function enhanceSelects(){
   });
 }
 
+function resyncSelects(){
+  $$("select").forEach(nat=>{ if(nat._sel) syncSel(nat._sel); });
+}
+
 function syncSel(box){
   const nat=box.querySelector("select"), menu=box.querySelector(".sel-menu");
   box.querySelector(".cv").textContent =
@@ -953,7 +957,10 @@ function syncSel(box){
     el.onclick=e=>{
       e.stopPropagation();
       nat.selectedIndex=Number(el.dataset.ix);
-      // A real change event, so existing .onchange handlers fire untouched.
+      // Both events, in the order a browser emits them for a real selection.
+      // The toolbar binds "input" and the country/map selects bind "change";
+      // sending only one silently disabled half the filters.
+      nat.dispatchEvent(new Event("input",{bubbles:true}));
       nat.dispatchEvent(new Event("change",{bubbles:true}));
       syncSel(box); closeSel(box);
       box.querySelector(".sel-btn").focus();
@@ -1157,11 +1164,16 @@ function renderCountry(){
   $("#cStatus").textContent=row.danger_status;
   $("#cTrend").innerHTML=trLabel(row.trend);
 
+  const keepCat=$("#cCat").value, keepCity=$("#cCity").value;
   const cats=[...new Set(D.incidents.filter(i=>i.country===c).map(i=>i.security_category))];
   $("#cCat").innerHTML=`<option value="">${T("allCats")}</option>`+
     cats.map(k=>`<option value="${k}">${esc(CAT(k))}</option>`).join("");
   $("#cCity").innerHTML=`<option value="">${T("selectCity")}</option>`+
     (CITIES[c]||[]).map(x=>`<option value="${x.n}">${esc(x.n)}</option>`).join("");
+
+  // Restore what the reader had chosen. A value with no matching option (after
+  // switching country) falls back to "" on its own, which is the right result.
+  $("#cCat").value=keepCat; $("#cCity").value=keepCity;
 
   $("#cStats").innerHTML=[
     [T("w7"),row.d7_incidents],[T("w30"),row.d30_incidents],
@@ -1183,6 +1195,7 @@ function renderCountry(){
 
   $("#cList").innerHTML=items.length?items.map(incCard).join(""):
     `<div class="empty">${T("noIncFilters")}</div>`;
+  if(typeof resyncSelects==="function") resyncSelects();
   $("#cCount").textContent=`${items.length} ${T("incidentsWord2")} \u00b7 ${label(WIN)}`;
   renderProx();
   $$("#v-country .inc").forEach(el=>el.onclick=()=>openIncident(
