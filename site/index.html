@@ -872,6 +872,8 @@ function renderCards(rows){
   });
 }
 
+const num = v => (v === undefined || v === null) ? "–" : v;
+
 function renderTable(){
   const q=$("#q").value.trim(), reg=$("#f-region").value, cat=$("#f-cat").value,
         tr=$("#f-trend").value, st=$("#f-status").value;
@@ -911,8 +913,8 @@ function renderTable(){
       <td class="serial num">${_ix+1}</td>
       <td class="l country"><button class="linkbtn" data-country="${esc(r.country)}">${esc(CTRY(r.country))}</button></td>
       <td class="l dstat">${statusCell(r)}</td>
-      <td class="num">${r.d1_incidents}</td>
-      <td class="num">${r.d7_incidents}</td><td class="num">${r.d30_incidents}</td>
+      <td class="num">${num(r.d1_incidents)}</td>
+      <td class="num">${num(r.d7_incidents)}</td><td class="num">${r.d30_incidents}</td>
       <td class="num">${r.prev30_covered?r.prev30_incidents:`<span class="badge est" title="${T("noCovHint")}">${T("noCoverage")}</span>`}</td>
       <td class="num delta ${r.prev30_covered&&r.chg>0?"pos":r.prev30_covered&&r.chg<0?"neg":""}">${!r.prev30_covered?"&ndash;":r.chg===null?"&ndash;":(r.chg>0?"+":"")+Math.round(r.chg*100)+"%"}</td>
       <td class="num">${r.d90_incidents}</td>
@@ -1218,7 +1220,7 @@ function renderCountry(){
   $("#cCat").value=keepCat; $("#cCity").value=keepCity;
 
   $("#cStats").innerHTML=[
-    [T("w1"),row.d1_incidents],[T("w7"),row.d7_incidents],[T("w30"),row.d30_incidents],
+    [T("w1"),num(row.d1_incidents)],[T("w7"),row.d7_incidents],[T("w30"),row.d30_incidents],
     [T("prev30full"),row.prev30_covered?row.prev30_incidents:T("noCoverage")],[T("w90"),row.d90_incidents],
     [T("fat30full"),row.d30_fatalities],[T("fat90full"),row.d90_fatalities],
     [T("exactGeo"),row.geo_quality.exact_pct+"%"],
