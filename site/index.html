@@ -57,7 +57,11 @@ a{color:var(--accent)}
 
 /* ---- toolbar --------------------------------------------------------- */
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
-  padding:11px 16px;background:var(--surface);border-bottom:var(--hair)}
+  padding:11px 16px;background:var(--surface);border-bottom:var(--hair);
+  position:relative;z-index:1100}
+/* The map view has its own control bar. Without a stacking context above the
+   Leaflet panes, an open menu is painted behind the map. */
+.maptools{position:relative;z-index:1100}
 .toolbar label{font-size:11px;color:var(--muted);margin-inline-end:-4px}
 input[type=search],select{
   border:var(--hair);background:var(--surface);border-radius:8px;
@@ -246,7 +250,7 @@ select.enhanced{position:absolute;width:1px;height:1px;opacity:0;pointer-events:
   border-inline-end:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
   transform:rotate(45deg) translate(-2px,-2px);transition:transform .18s}
 .sel[data-open=true] .sel-btn .cx{transform:rotate(-135deg) translate(-3px,-3px)}
-.sel-menu{position:absolute;top:calc(100% + 5px);inset-inline-start:0;z-index:60;
+.sel-menu{position:absolute;top:calc(100% + 5px);inset-inline-start:0;z-index:1200;
   min-width:100%;max-height:290px;overflow:auto;padding:5px;
   background:var(--surface);border:var(--hair);border-radius:var(--r);
   box-shadow:var(--shadow);display:none}
@@ -746,8 +750,12 @@ function select({country=null,category=null,win=WIN,fatalOnly=false,text=null,ov
     }
     if(!inWin(i.event_date,win)) return false;
     if(fatalOnly && !(i.fatalities>0)) return false;
-    if(text){const t=text.toLowerCase();
-      if(!((i.title||"")+" "+(i.summary||"")+" "+(i.location||"")).toLowerCase().includes(t)) return false;}
+    if(text){
+      const hay=((i.title||"")+" "+(i.summary||"")+" "+(i.location||"")+" "+
+                 (i.security_subtype||"")+" "+(i.native_subcategory||"")+" "+
+                 (i.actors||[]).map(a=>a.name||"").join(" ")+" "+
+                 CAT(i.security_category)+" "+CTRY(i.country)).toLowerCase();
+      if(!searchTerms(text).some(t=>hay.includes(t))) return false;}
     return true;
   }).sort((a,b)=>(b.event_date||"").localeCompare(a.event_date||"")
       || (b.significance||0)-(a.significance||0));
@@ -876,6 +884,43 @@ document.addEventListener("click", e => {
     navigator.clipboard.writeText(id).then(done).catch(() => {});
   } else { done(); }
 });
+
+// Arabic security terms -> the English wording the source uses. A query is
+// matched on the term itself AND on any mapping, so Arabic and English both work.
+const AR_TERMS={
+ "صاروخ":["missile","rocket"], "صواريخ":["missile","rocket"],
+ "مسيرة":["drone","uav"], "مسيرات":["drone","uav"], "درون":["drone"],
+ "طائرة":["aircraft","plane","drone"], "غارة":["strike","airstrike","raid"],
+ "غارات":["strike","airstrike"], "قصف":["shelling","bombardment","strike","shelled"],
+ "انفجار":["explosion","blast","exploded"], "تفجير":["bombing","bomb","blast"],
+ "عبوة":["ied","explosive device"], "لغم":["landmine","mine"],
+ "اشتباك":["clash","fighting","firefight"], "اشتباكات":["clashes","fighting"],
+ "معركة":["battle","fighting"], "هجوم":["attack","assault","offensive"],
+ "هجمات":["attacks"], "اختطاف":["abduct","kidnap","abduction"],
+ "خطف":["abduct","kidnap"], "رهائن":["hostage"],
+ "اغتيال":["assassination","assassinated"], "قتل":["killed","kill"],
+ "قتلى":["killed","dead","fatalities"], "جرحى":["wounded","injured"],
+ "مدنيين":["civilian","civilians"], "مدنيون":["civilian","civilians"],
+ "جيش":["army","military","forces"], "قوات":["forces","troops"],
+ "شرطة":["police"], "ميليشيا":["militia"], "مسلحين":["gunmen","armed men"],
+ "مسلحون":["gunmen","armed men"], "إرهاب":["terror","terrorist"],
+ "انقلاب":["coup"], "احتجاج":["protest"], "شغب":["riot","unrest"],
+ "مطار":["airport","airfield"], "ميناء":["port","harbour","harbor"],
+ "حدود":["border"], "طريق":["road","highway"], "سفارة":["embassy"],
+ "قنصلية":["consulate"], "دبلوماسي":["diplomat","diplomatic"],
+ "مستشفى":["hospital"], "مدرسة":["school"], "سوق":["market"],
+ "مسجد":["mosque"], "كنيسة":["church"]
+};
+function searchTerms(q){
+  const raw=q.trim().toLowerCase();
+  if(!raw) return [];
+  const out=new Set([raw]);
+  // whole query, then each word, so "قصف مطار" widens to both mappings
+  [raw, ...raw.split(/\s+/)].forEach(w=>{
+    (AR_TERMS[w]||[]).forEach(t=>out.add(t.toLowerCase()));
+  });
+  return [...out];
+}
 
 function renderTable(){
   const q=$("#q").value.trim(), reg=$("#f-region").value, cat=$("#f-cat").value,
@@ -1054,7 +1099,18 @@ function trLabel(t){
   return `<span class="${trCls(t.label)}">${esc(TREND(t.label))}</span>`+
     (pct!=null?` <span style="color:var(--muted);font-weight:400">${pct>0?"+":""}${pct}%</span>`:"");
 }
-function regionOf(c){const i=D.incidents.find(x=>x.country===c);return (i&&i.region)||REGION[c]||"Other";}
+function buildRegionMap(){
+  const tally={};
+  D.incidents.forEach(i=>{
+    if(!i.country || !i.region) return;
+    (tally[i.country] = tally[i.country] || {});
+    tally[i.country][i.region] = (tally[i.country][i.region] || 0) + 1;
+  });
+  Object.keys(tally).forEach(c=>{
+    REGION[c] = Object.entries(tally[c]).sort((a,b)=>b[1]-a[1])[0][0];
+  });
+}
+function regionOf(c){ return REGION[c] || "Other"; }
 const REGION={};
 
 function wire(){
@@ -1342,11 +1398,11 @@ function fillSelect(el,vals,all){el.innerHTML=`<option value="">${all}</option>`
   vals.map(v=>`<option value="${esc(v.v)}">${esc(v.t)}</option>`).join("")}
 function boot(data){
   D=data;
-  if(typeof detectArabicFont==='function') detectArabicFont();
-  applyStatic();
   renderStatus();
-  const regions=[...new Set(D.incidents.map(i=>i.region).filter(Boolean))].sort();
-  D.incidents.forEach(i=>{if(i.region)REGION[i.country]=i.region});
+  buildRegionMap();
+  // Derived from the countries, so every option has at least one row behind it.
+  const regions=[...new Set(D.countries.map(r=>regionOf(r.country)))]
+    .filter(r=>r && r!=="Other").sort();
   fillSelect($("#f-region"),regions.map(r=>({v:r,t:REG(r)})),T("allRegions"));
   const catOpts=COLS.filter(c=>D.categories[c]).map(c=>({v:c,t:CAT(c)}));
   fillSelect($("#f-cat"),catOpts,T("allCats"));
