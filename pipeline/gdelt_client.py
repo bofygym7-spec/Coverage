@@ -153,6 +153,11 @@ class GdeltClient:
         return None
 
     # -- events -------------------------------------------------------------
+    def search_stories(self, start: date, end: date,
+                       chunk_days: int = MAX_WINDOW_DAYS, **filters) -> list[dict]:
+        """Walk narrative stories. Same windowing and restart rules as events."""
+        return list(self._walk("/stories", start, end, chunk_days, filters))
+
     def search_events(self, start: date, end: date, chunk_days: int = MAX_WINDOW_DAYS,
                       **filters) -> Iterator[dict]:
         """Yield every event in [start, end], splitting windows and paging cursors.
@@ -167,6 +172,10 @@ class GdeltClient:
         upserts on gdelt_event_id, so a repeated event updates in place and
         first_seen_at is preserved.
         """
+        yield from self._walk("/events", start, end, chunk_days, filters)
+
+    def _walk(self, path: str, start: date, end: date, chunk_days: int,
+              filters: dict) -> Iterator[dict]:
         for w_start, w_end in self.split_window(start, end, chunk_days):
             for attempt in range(MAX_WALK_RESTARTS + 1):
                 cursor, yielded = None, 0
@@ -183,7 +192,7 @@ class GdeltClient:
                             params["category"] = ",".join(params["category"])
                         if cursor:
                             params["cursor"] = cursor
-                        payload = self._get("/events", params)
+                        payload = self._get(path, params)
                         for row in payload.get("data", []):
                             yielded += 1
                             yield row

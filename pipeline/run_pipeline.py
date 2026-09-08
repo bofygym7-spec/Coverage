@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse, json, os, sys, traceback
 from datetime import date, timedelta
 from pipeline.gdelt_client import BACKFILL_CHUNK_DAYS
-from pipeline import geo_scope, scoring
+from pipeline import geo_scope, scoring, stories
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -43,6 +43,17 @@ def fetch_live(con, run_id: int, start: date, end: date,
                                          include_images=False,
                                          include_entity_images=False))
         ins, upd = core.upsert_events(con, rows, run_id)
+        # Stories for the same window. Their linked_events carry exact event ids,
+        # which is how they attach to incidents later.
+        try:
+            srows = stories.fetch_window(client, w_start, w_end, chunk_days,
+                                         DANGER_CATEGORIES)
+            si, su = stories.upsert_stories(con, srows, core._now())
+            print(f"    stories: {len(srows)} ({si} new)", flush=True)
+        except Exception as e:
+            # Story coverage is an enhancement. If it fails the incident data is
+            # still correct, so the run continues with a visible note.
+            print(f"    [warn] story walk failed: {e}", flush=True)
         con.commit()
         total, ins_t, upd_t = total + len(rows), ins_t + ins, upd_t + upd
         print(f"  {w_start}..{w_end}: {len(rows):5d} events ({ins} new, {upd} updated)",
@@ -89,6 +100,7 @@ def main() -> int:
                     w_start = max(resume, COVERAGE_START)
 
     core.seed_scoring_config(con)
+    stories.ensure_tables(con)
     run_id = core.start_run(con, w_start, w_end)
     errors: list[str] = []
 
@@ -154,6 +166,8 @@ def build_site_data(con, incidents, countries, as_of, run_id):
     # before the payload is assembled so both the tally and the per-incident
     # field are available to the dashboard.
     scope_tally = geo_scope.annotate(incidents)
+    n_story_links = stories.attach(con, incidents)
+    print(f"[stories] {n_story_links} story links attached to incidents")
 
     # Measurement, official designation, and their disagreement. Computed after
     # the rollup so percentiles rank exactly the numbers the table displays.
