@@ -286,6 +286,7 @@ td.dstat{white-space:nowrap;line-height:1.9}
 .recid:hover{color:var(--accent)}
 .recid.copied::after{content:" \2713";color:#22603a}
 ul.srcs .dom.en{font-size:11px;color:var(--muted);user-select:all}
+.badge.inj{background:#fdf1e3;color:#8a5312}
 html[dir=rtl]{--panel-hidden:-100%}
 html[dir=rtl] body{font-family:var(--ar);font-size:14.5px;line-height:1.7}
 /* Majalla sets small for its point size, Noto Naskh sets larger. Each gets the
@@ -494,6 +495,9 @@ const DICT={
   secCat:"التصنيف الأمني", secSub:"النوع الفرعي", overlays:"مؤشرات إضافية",
   nativeCat:"التصنيف المصدري الأصلي", catDispute:"تعارض في التصنيف",
   codedDiff:"السجلات المدمجة رمزت بشكل مختلف", actors:"الأطراف", orgs:"المنظمات",
+  injuries:"الإصابات", injuredWord:"مصاب", injNone:"لا إصابات",
+  injNotMentioned:"غير مذكور", injDerived:"مستخرج من الملخص",
+  injNotedHint:"الملخص لا يذكر الإصابات. هذا ليس إثباتا لعدم وقوع إصابات.",
   fatalities:"الوفيات المبلغ عنها", sourcesDiffer:"المصادر متباينة",
   goldstein:"مقياس غولدستاين", significance:"الأهمية", gdeltConf:"درجة الثقة",
   verification:"التحقق", impact:"وقوع الأثر", corrob:"المقالات المؤيدة",
@@ -574,6 +578,9 @@ const DICT={
   secCat:"Security category", secSub:"Security subtype", overlays:"Overlay flags",
   nativeCat:"Original source category", catDispute:"Category dispute",
   codedDiff:"merged records coded differently", actors:"Actors", orgs:"Organizations",
+  injuries:"Injuries", injuredWord:"injured", injNone:"none reported",
+  injNotMentioned:"not mentioned", injDerived:"read from summary",
+  injNotedHint:"The summary does not mention injuries. That is not a finding of no injuries.",
   fatalities:"Reported fatalities", sourcesDiffer:"sources differ",
   goldstein:"Goldstein scale", significance:"Significance", gdeltConf:"Source confidence",
   verification:"Verification", impact:"Impact realised", corrob:"Corroborating articles",
@@ -1189,7 +1196,14 @@ function openIncident(i){
         ${i.category_disputed?`<dt>${T("catDispute")}</dt><dd><span class="badge unver">${T("codedDiff")}: <span class="en">${i.merged_categories.map(esc).join(", ")}</span></span></dd>`:""}
         <dt>${T("actors")}</dt><dd class="en">${acts||T("notReported")}</dd>
         <dt>${T("orgs")}</dt><dd class="en">${(i.organizations||[]).map(esc).join(", ")||T("noneLinked")}</dd>
-        <dt>${T("fatalities")}</dt><dd>${i.fatalities??T("notReported")}${
+        <dt>${T("injuries")}</dt><dd>${i.injuries==null
+        ? `<span class="badge est" title="${esc(T("injNotedHint"))}">${T("injNotMentioned")}</span>`
+        : `${i.injuries_qualifier==="reported_none" ? T("injNone") : i.injuries}
+           <span class="badge est en" title="${esc((i.injuries_phrases||[]).join("  |  "))}"
+             >${T("injDerived")}${i.injuries_qualifier && i.injuries_qualifier!=="reported_none"
+                ? " · "+esc(i.injuries_qualifier) : ""}</span>
+           ${i.injuries_disputed ? `<span class="badge unver">${T("sourcesDiffer")}</span>` : ""}`}</dd>
+      <dt>${T("fatalities")}</dt><dd>${i.fatalities??T("notReported")}${
           i.fatalities_disputed?` <span class="badge unver">${T("sourcesDiffer")}: ${i.fatalities_reported_range.join(" – ")}</span>`:""}</dd>
         <dt>${T("goldstein")}</dt><dd>${i.goldstein_scale??T("notScored")}</dd>
         <dt>${T("significance")}</dt><dd>${i.significance??T("notScored")}</dd>
@@ -1398,6 +1412,8 @@ function fillSelect(el,vals,all){el.innerHTML=`<option value="">${all}</option>`
   vals.map(v=>`<option value="${esc(v.v)}">${esc(v.t)}</option>`).join("")}
 function boot(data){
   D=data;
+  if(typeof detectArabicFont==='function') detectArabicFont();
+  applyStatic();
   renderStatus();
   buildRegionMap();
   // Derived from the countries, so every option has at least one row behind it.
