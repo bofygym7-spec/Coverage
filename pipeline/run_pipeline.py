@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse, json, os, sys, traceback
 from datetime import date, timedelta
 from pipeline.gdelt_client import BACKFILL_CHUNK_DAYS
-from pipeline import geo_scope, scoring, stories
+from pipeline import geo_scope, scoring, stories, injuries
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -166,6 +166,13 @@ def build_site_data(con, incidents, countries, as_of, run_id):
     # before the payload is assembled so both the tally and the per-incident
     # field are available to the dashboard.
     scope_tally = geo_scope.annotate(incidents)
+    # Derived from summary text, not coded by the source. Reparsed on every run,
+    # so a rule change applies to the whole store without any refetch.
+    inj_tally = injuries.annotate(incidents)
+    print(f"[injuries] {inj_tally['with_figure']} with a figure \u00b7 "
+          f"{inj_tally['not_mentioned']} not mentioned \u00b7 "
+          f"{inj_tally['reported_none']} explicitly none \u00b7 "
+          f"{inj_tally['disputed']} disputed")
     n_story_links = stories.attach(con, incidents)
     print(f"[stories] {n_story_links} story links attached to incidents")
 
@@ -193,6 +200,7 @@ def build_site_data(con, incidents, countries, as_of, run_id):
             "run_id": run_id,
             "total_incidents": len(incidents),
             "scope_tally": scope_tally,
+            "injury_tally": inj_tally,
             "score_tally": score_tally,
             "designation_sources": designations["sources"],
             "total_raw_events": con.execute("SELECT COUNT(*) c FROM raw_events").fetchone()["c"],
